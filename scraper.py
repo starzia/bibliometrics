@@ -1,7 +1,7 @@
 #!/usr/bin/python
 '''
 To prepare, run:
-pip install lxml cssselect
+pip install lxml cssselect requests pprint
 
 Then just run this without any paramenters.
 '''
@@ -11,10 +11,12 @@ from lxml.cssselect import CSSSelector
 import requests
 import pprint
 
+pp = pprint.PrettyPrinter(indent=4)
+
 def scrape_all():
-    profs = [];
-    profs.append(scrape_kellogg());
-    pprint(profs)
+    profs = []
+    profs.append(scrape_kellogg())
+    pp.pprint(profs)
 
 def get_tree(url):
     r = requests.get(url)
@@ -41,10 +43,14 @@ def scrape_kellogg_faculty(netId):
     """ :return: a faculty object or None if it's not a tenure track faculty """
     tree = get_tree('http://www.kellogg.northwestern.edu/Faculty/Faculty_Search_Results.aspx?netid=' + netId)
     job_title = CSSSelector('span#lblTitle')(tree)[0].text
-    if (title_is_tenure_track(job_title)):
-        name = CSSSelector('span#lblTitle')(tree)[0].text
-        return {'name':name, 'title':job_title}
-    return None
+    if not title_is_tenure_track(job_title):
+        return None
+    name = CSSSelector('span#lblName')(tree)[0].text
+    cv_link = None
+    for a in CSSSelector('div#sideNav3 a')(tree):
+        if "Download Vita (pdf)" in a.text:
+            cv_link = a.get('href')
+    return {'name':name, 'title':job_title, 'cv_link': cv_link}
 
 def title_is_tenure_track(title):
     lowercase = title.lower()
