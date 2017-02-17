@@ -1,5 +1,7 @@
 #!/usr/bin/python
 '''
+This is written in Python 3
+
 To prepare, run:
 pip install lxml cssselect requests pprint
 
@@ -11,18 +13,57 @@ from lxml.cssselect import CSSSelector
 import requests
 import pprint
 import pickle
+import os
 
 pp = pprint.PrettyPrinter(indent=4)
 
-def scrape_all():
+def lower_alpha(str):
+    """ :return: a transformation of the string including only lowercase letters and underscore"""
+    return ''.join(char for char in str.lower().replace(' ', '_') if char.isalnum() or char is '_')
+
+class Professor:
+    def __init__(self, school, name, title, cv_url=None, graduation_year=None, staff_id=None):
+        self.school = school
+        self.name = name
+        self.title = title
+        self.cv_url = cv_url
+        self.graduation_year = graduation_year
+        self.staff_id = staff_id
+
+    def slug(self):
+        """ :return: a human-readable string identifying the professor, to be used to filenames and such. """
+        return lower_alpha(self.school + '_' + self.name)
+
+    def download_cv(self):
+        print "downloading CV for " + self.slug()
+        if self.cv_url is None:
+            print "WARNING: missing CV!"
+            return
+
+        cv_path = 'CVs'
+        if not os.path.exists(cv_path):
+            os.makedirs(cv_path)
+
+        r = requests.get(self.cv_url)
+        with open(cv_path + '/' + self.slug() + ".pdf", 'wb') as f:
+            f.write(r.content)
+
+def scrape_all_schools():
     profs = []
     profs.extend(scrape_kellogg())
     pp.pprint(profs)
 
-    # save to disk
+    # save professor info to disk
     output = open('professors.pkl', 'wb')
     pickle.dump(profs, output)
     output.close()
+
+    return profs
+
+def scrape_CVs(profs):
+    # download CVs
+    for prof in profs:
+        prof.download_cv()
 
 def get_tree(url):
     r = requests.get(url)
@@ -59,12 +100,22 @@ def scrape_kellogg_faculty(netId):
     for a in css_select(tree, 'div#sideNav3 a'):
         if "Download Vita (pdf)" in a.text:
             cv_link = a.get('href')
-    return {'name':name, 'title':job_title, 'cv_link': cv_link}
+    return Professor(name=name, title=job_title, cv_url=cv_link, school='Kellogg', staff_id=netId)
 
 def title_is_tenure_track(title):
     lowercase = title.lower()
     return "professor" in lowercase and "adjunct" not in lowercase and "emeritus" not in lowercase \
-                and "clinical" not in lowercase and "visiting" not in lowercase
+                and "clinical" not in lowercase and "visiting" not in lowercase \
+                and "research assistant" not in lowercase
+
+def load_profs_from_file():
+    with open('professors.pkl', 'r') as input:
+        return pickle.load(input)
 
 if __name__ == '__main__':
-    scrape_all()
+    do_reload = True
+    if do_reload:
+        profs = scrape_all_schools()
+    else:
+        profs = load_profs_from_file()
+    scrape_CVs(profs)
