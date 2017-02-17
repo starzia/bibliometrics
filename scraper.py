@@ -4,8 +4,8 @@ This is written in Python 3
 
 To prepare, run:
 pip install lxml cssselect requests pprint
-# slate requires a specific version of pdfminer
-pip install --upgrade --ignore-installed slate==0.3 pdfminer==20110515
+# pdfminer installs the pdf2txt.py command
+pip install pdfminer
 
 Then just run ./scraper.py without any paramenters.
 '''
@@ -16,7 +16,7 @@ import requests
 import pprint
 import pickle
 import os
-import slate
+import subprocess
 
 pp = pprint.PrettyPrinter(indent=4)
 CV_PATH = 'CVs'
@@ -73,9 +73,8 @@ def print_CVs():
     for file_path in os.listdir(CV_PATH):
         if file_path.endswith(".pdf"):
             print '\n' + file_path
-            with open(CV_PATH + '/' + file_path) as f:
-                for page in slate.PDF(f):
-                    print page
+            # the commandline version of pdf2txt actually workd better than the Python slate package
+            print subprocess.check_output(['pdf2txt.py', CV_PATH + '/' + file_path])
 
 def get_tree(url):
     r = requests.get(url)
