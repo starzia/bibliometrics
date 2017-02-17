@@ -4,8 +4,10 @@ This is written in Python 3
 
 To prepare, run:
 pip install lxml cssselect requests pprint
+# slate requires a specific version of pdfminer
+pip install --upgrade --ignore-installed slate==0.3 pdfminer==20110515
 
-Then just run this without any paramenters.
+Then just run ./scraper.py without any paramenters.
 '''
 
 import lxml.html
@@ -14,8 +16,10 @@ import requests
 import pprint
 import pickle
 import os
+import slate
 
 pp = pprint.PrettyPrinter(indent=4)
+CV_PATH = 'CVs'
 
 def lower_alpha(str):
     """ :return: a transformation of the string including only lowercase letters and underscore"""
@@ -40,12 +44,12 @@ class Professor:
             print "WARNING: missing CV!"
             return
 
-        cv_path = 'CVs'
-        if not os.path.exists(cv_path):
-            os.makedirs(cv_path)
+        global CV_PATH
+        if not os.path.exists(CV_PATH):
+            os.makedirs(CV_PATH)
 
         r = requests.get(self.cv_url)
-        with open(cv_path + '/' + self.slug() + ".pdf", 'wb') as f:
+        with open(CV_PATH + '/' + self.slug() + ".pdf", 'wb') as f:
             f.write(r.content)
 
 def scrape_all_schools():
@@ -64,6 +68,14 @@ def scrape_CVs(profs):
     # download CVs
     for prof in profs:
         prof.download_cv()
+
+def print_CVs():
+    for file_path in os.listdir(CV_PATH):
+        if file_path.endswith(".pdf"):
+            print '\n' + file_path
+            with open(CV_PATH + '/' + file_path) as f:
+                for page in slate.PDF(f):
+                    print page
 
 def get_tree(url):
     r = requests.get(url)
@@ -113,9 +125,10 @@ def load_profs_from_file():
         return pickle.load(input)
 
 if __name__ == '__main__':
-    do_reload = True
+    do_reload = False
     if do_reload:
         profs = scrape_all_schools()
+        scrape_CVs(profs)
     else:
         profs = load_profs_from_file()
-    scrape_CVs(profs)
+        print_CVs()
