@@ -4,7 +4,7 @@ This is written in Python 3
 
 To prepare, run:
 pip install lxml cssselect requests pprint
-# pdfminer installs the pdf2txt.py command
+# pdfminer installs the pdf2txt.py command joblib
 pip install pdfminer
 
 Then just run ./scraper.py without any paramenters.
@@ -53,6 +53,7 @@ class Professor:
             f.write(r.content)
 
 def scrape_all_schools():
+    """as a side-effect this saves a pickled version of the returned list of professors"""
     profs = []
     profs.extend(scrape_kellogg())
     pp.pprint(profs)
@@ -69,12 +70,26 @@ def scrape_CVs(profs):
     for prof in profs:
         prof.download_cv()
 
-def print_CVs():
+def convert_CVs_to_text():
     for file_path in os.listdir(CV_PATH):
         if file_path.endswith(".pdf"):
-            print '\n' + file_path
-            # the commandline version of pdf2txt actually workd better than the Python slate package
-            print subprocess.check_output(['pdf2txt.py', CV_PATH + '/' + file_path])
+            slug = file_path.replace('.pdf','')
+            print 'reading ' + file_path
+            # The commandline version of pdf2txt actually works better than the Python slate package.
+            # Slate drops a lot of whitespace and newlines.
+            cv = subprocess.check_output(['pdf2txt.py', CV_PATH + '/' + file_path])
+            with open(CV_PATH + '/' + slug + '.txt', 'w') as f:
+                f.write(cv)
+
+def load_CVs():
+    """ :return: a dictionary mapping name slugs to cv strings"""
+    all_CVs = {}
+    for file_path in os.listdir(CV_PATH):
+        if file_path.endswith(".txt"):
+            slug = file_path.replace('.txt','')
+            with open(CV_PATH + '/' + file_path, 'r') as f:
+                all_CVs[slug] = f.read()
+    return all_CVs
 
 def get_tree(url):
     r = requests.get(url)
@@ -128,6 +143,7 @@ if __name__ == '__main__':
     if do_reload:
         profs = scrape_all_schools()
         scrape_CVs(profs)
+        convert_CVs_to_text()
     else:
         profs = load_profs_from_file()
-        print_CVs()
+    all_CVs = load_CVs()
