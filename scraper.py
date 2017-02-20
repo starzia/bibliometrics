@@ -61,6 +61,8 @@ class Professor:
             f.write(r.content)
 
     def find_google_scholar_page(self):
+        """NOTE: google is very proactive about blocking requests if it thinks you are a bot,
+        so this sometimes results in a 503 error. """
         wait()
         # get search results page
         tree = get_tree('https://scholar.google.com/scholar?q=author%%3A"%s"+%s' %
@@ -69,7 +71,6 @@ class Professor:
         if len(anchors) > 0:
             if len(anchors) > 1:
                 print "WARNING: multiple author pages found for %s" % self.name
-            print anchors
             self.google_scholar_url = anchors[0].get('href')
 
 def scrape_all_schools():
