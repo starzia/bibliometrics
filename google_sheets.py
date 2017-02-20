@@ -48,6 +48,12 @@ def get_credentials():
         print('Storing credentials to ' + credential_path)
     return credentials
 
+def get_from_row(row, column_idx):
+    """get the value from the specified column index, or return None if it's empty"""
+    if (len(row) <= column_idx) or row[column_idx] == "":
+        return None
+    return row[column_idx]
+
 class GoogleSheets:
     SHEET_ID = '1TT3l1CKt2GLG_ZUJOV2F7RHGBIECsgnGJLO7hQ0Y_qI'
 
@@ -64,13 +70,28 @@ class GoogleSheets:
             spreadsheetId=self.SHEET_ID, range=range).execute().get('values', [])
 
     def read_profs(self):
-        values = self.get_range('Professors!A2:G')
+        """:return: a list of Professor objects"""
+        values = self.get_range('Professors')
+        profs = []
         if not values:
             print('No data found.')
         else:
-            print('Name, Major:')
+            saw_header = False;
             for row in values:
-                print('%s, %s' % (row[2], row[6] if len(row) >= 7 else None))
+                if not saw_header:
+                    saw_header = True
+                    continue
+                # skip hidden rows
+                if get_from_row(row, 7) is not None:
+                    continue
+                profs.append(Professor(name=get_from_row(row,2),
+                                       school=get_from_row(row, 1),
+                                       title=get_from_row(row,3),
+                                       cv_url=get_from_row(row,4),
+                                       graduation_year=get_from_row(row,5),
+                                       staff_id=get_from_row(row,6),
+                                       google_scholar_url=get_from_row(row,8)))
+        return profs
 
     def save_prof(self, prof):
         data = {'values':[[prof.slug(),

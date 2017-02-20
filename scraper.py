@@ -10,34 +10,21 @@ pip install pdfminer
 Then just run ./scraper.py without any paramenters.
 '''
 
-import lxml.html
-from lxml.cssselect import CSSSelector
 import pprint
 import pickle
 import subprocess
-import time
-import random
 from professor import *
+from google_sheets import GoogleSheets
 
 pp = pprint.PrettyPrinter(indent=4)
 CV_PATH = 'CVs'
-
-def wait():
-    time.sleep(3 + random.uniform(0,3))
 
 def scrape_all_schools():
     """as a side-effect this saves a pickled version of the returned list of professors"""
     profs = []
     profs.extend(scrape_kellogg())
     pp.pprint(profs)
-    save(profs)
     return profs
-
-def save(profs):
-    # save professor info to disk
-    output = open('professors.pkl', 'wb')
-    pickle.dump(profs, output)
-    output.close()
 
 def convert_CVs_to_text():
     for file_path in os.listdir(CV_PATH):
@@ -59,17 +46,6 @@ def load_CVs():
             with open(CV_PATH + '/' + file_path, 'r') as f:
                 all_CVs[slug] = f.read()
     return all_CVs
-
-http_session = requests.Session()
-
-def get_tree(url):
-    r = http_session.get(url, headers={"User-Agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36"})
-    if r.status_code != 200:
-        print "WARNING got %d status code for %s" % (r.status_code, url)
-    return lxml.html.fromstring(r.text)
-
-def css_select(tree, css_selector):
-    return CSSSelector(css_selector)(tree)
 
 def scrape_kellogg():
     """
@@ -107,10 +83,6 @@ def title_is_tenure_track(title):
                 and "clinical" not in lowercase and "visiting" not in lowercase \
                 and "research assistant" not in lowercase
 
-def load_profs_from_file():
-    with open('professors.pkl', 'r') as input:
-        return pickle.load(input)
-
 def show_editorial_service(all_CVs):
     for name, cv in all_CVs.iteritems():
         print
@@ -120,20 +92,17 @@ def show_editorial_service(all_CVs):
                 print line
 
 if __name__ == '__main__':
+    gs = GoogleSheets()
     do_reload = False
     if do_reload:
         profs = scrape_all_schools()
         for p in profs:
             p.download_cv()
             p.get_google_scholar_page()
+            gs.save_prof(p)
         convert_CVs_to_text()
-    profs = load_profs_from_file()
+    profs = gs.read_profs()
     all_CVs = load_CVs()
     show_editorial_service(all_CVs)
-    save(profs)
-
-    # TODO: remove the code below
-    for p in profs:
-        print p.name
-        p.find_google_scholar_page()
-    save(profs)
+    pp.pprint(profs)
+    print "Total of %d professors found" % len(profs)
