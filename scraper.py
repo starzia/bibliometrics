@@ -17,6 +17,9 @@ import pprint
 import pickle
 import os
 import subprocess
+import urllib
+import time
+import random
 
 pp = pprint.PrettyPrinter(indent=4)
 CV_PATH = 'CVs'
@@ -25,20 +28,25 @@ def lower_alpha(str):
     """ :return: a transformation of the string including only lowercase letters and underscore"""
     return ''.join(char for char in str.lower().replace(' ', '_') if char.isalnum() or char is '_')
 
+def wait():
+    time.sleep(3 + random.uniform(0,3))
+
 class Professor:
-    def __init__(self, school, name, title, cv_url=None, graduation_year=None, staff_id=None):
+    def __init__(self, school, name, title, cv_url=None, graduation_year=None, staff_id=None, google_scholar_url=None):
         self.school = school
         self.name = name
         self.title = title
         self.cv_url = cv_url
         self.graduation_year = graduation_year
         self.staff_id = staff_id
+        self.google_scholar_url = google_scholar_url
 
     def slug(self):
         """ :return: a human-readable string identifying the professor, to be used to filenames and such. """
         return lower_alpha(self.school + '_' + self.name)
 
     def download_cv(self):
+        wait()
         print "downloading CV for " + self.slug()
         if self.cv_url is None:
             print "WARNING: missing CV!"
@@ -52,23 +60,31 @@ class Professor:
         with open(CV_PATH + '/' + self.slug() + ".pdf", 'wb') as f:
             f.write(r.content)
 
+    def find_google_scholar_page(self):
+        wait()
+        # get search results page
+        tree = get_tree('https://scholar.google.com/scholar?q=author%%3A"%s"+%s' %
+                        (urllib.quote_plus(self.name), self.school))
+        anchors = css_select(tree, 'h4.gs_rt2 a')
+        if len(anchors) > 0:
+            if len(anchors) > 1:
+                print "WARNING: multiple author pages found for %s" % self.name
+            print anchors
+            self.google_scholar_url = anchors[0].get('href')
+
 def scrape_all_schools():
     """as a side-effect this saves a pickled version of the returned list of professors"""
     profs = []
     profs.extend(scrape_kellogg())
     pp.pprint(profs)
+    save(profs)
+    return profs
 
+def save(profs):
     # save professor info to disk
     output = open('professors.pkl', 'wb')
     pickle.dump(profs, output)
     output.close()
-
-    return profs
-
-def scrape_CVs(profs):
-    # download CVs
-    for prof in profs:
-        prof.download_cv()
 
 def convert_CVs_to_text():
     for file_path in os.listdir(CV_PATH):
@@ -92,7 +108,9 @@ def load_CVs():
     return all_CVs
 
 def get_tree(url):
-    r = requests.get(url)
+    r = requests.get(url, headers={"User-Agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36"})
+    if r.status_code != 200:
+        print "WARNING got %d status code for %s" % (r.status_code, url)
     return lxml.html.fromstring(r.text)
 
 def css_select(tree, css_selector):
@@ -138,12 +156,29 @@ def load_profs_from_file():
     with open('professors.pkl', 'r') as input:
         return pickle.load(input)
 
+def show_editorial_service(all_CVs):
+    for name, cv in all_CVs.iteritems():
+        print
+        print name
+        for line in cv.lower().splitlines():
+            if ("editor" in line):
+                print line
+
 if __name__ == '__main__':
     do_reload = False
     if do_reload:
         profs = scrape_all_schools()
-        scrape_CVs(profs)
+        for p in profs:
+            p.download_cv()
+            p.get_google_scholar_page()
         convert_CVs_to_text()
-    else:
-        profs = load_profs_from_file()
+    profs = load_profs_from_file()
     all_CVs = load_CVs()
+    show_editorial_service(all_CVs)
+    save(profs)
+
+    # TODO: remove the code below
+    for p in profs:
+        print p.name
+        p.find_google_scholar_page()
+    save(profs)
