@@ -1,0 +1,4 @@
+*.pyc
+.idea
+.credentials
+CVs/*

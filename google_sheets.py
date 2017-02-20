@@ -6,6 +6,8 @@ from oauth2client import client
 from oauth2client import tools
 from oauth2client.file import Storage
 
+from professor import Professor
+
 # based on https://developers.google.com/sheets/api/quickstart/python
 
 try:
@@ -46,27 +48,65 @@ def get_credentials():
         print('Storing credentials to ' + credential_path)
     return credentials
 
-def connect():
-    credentials = get_credentials()
-    http = credentials.authorize(httplib2.Http())
-    discoveryUrl = ('https://sheets.googleapis.com/$discovery/rest?'
-                    'version=v4')
-    service = discovery.build('sheets', 'v4', http=http,
-                              discoveryServiceUrl=discoveryUrl)
+class GoogleSheets:
+    SHEET_ID = '1TT3l1CKt2GLG_ZUJOV2F7RHGBIECsgnGJLO7hQ0Y_qI'
 
-    spreadsheetId = '1TT3l1CKt2GLG_ZUJOV2F7RHGBIECsgnGJLO7hQ0Y_qI'
-    rangeName = 'A2:G'
-    result = service.spreadsheets().values().get(
-        spreadsheetId=spreadsheetId, range=rangeName).execute()
-    values = result.get('values', [])
+    def __init__(self):
+        credentials = get_credentials()
+        http = credentials.authorize(httplib2.Http())
+        discoveryUrl = ('https://sheets.googleapis.com/$discovery/rest?'
+                        'version=v4')
+        self.service = discovery.build('sheets', 'v4', http=http,
+                                  discoveryServiceUrl=discoveryUrl)
 
-    if not values:
-        print('No data found.')
-    else:
-        print('Name, Major:')
+    def get_range(self, range):
+        return self.service.spreadsheets().values().get(
+            spreadsheetId=self.SHEET_ID, range=range).execute().get('values', [])
+
+    def read_profs(self):
+        values = self.get_range('Professors!A2:G')
+        if not values:
+            print('No data found.')
+        else:
+            print('Name, Major:')
+            for row in values:
+                print('%s, %s' % (row[2], row[6] if len(row) >= 7 else None))
+
+    def save_prof(self, prof):
+        data = {'values':[[prof.slug(),
+                           prof.school,
+                           prof.name,
+                           prof.title,
+                           prof.cv_url,
+                           prof.graduation_year,
+                           prof.staff_id,
+                           None, # hidden
+                           prof.google_scholar_url]]}
+        row = self.get_row_for_prof(prof)
+        if row is None:
+            # append new row
+            self.service.spreadsheets().values().append(spreadsheetId=self.SHEET_ID,
+                                                        valueInputOption='RAW',
+                                                        insertDataOption="INSERT_ROWS",
+                                                        range='Professors',
+                                                        body=data).execute()
+        else:
+            # update row
+            self.service.spreadsheets().values().update(spreadsheetId=self.SHEET_ID,
+                                                        valueInputOption='RAW',
+                                                        range='Professors!%d:%d' % (row, row),
+                                                        body=data).execute()
+
+    # TODO: cache these results to make it more efficient
+    def get_row_for_prof(self, prof):
+        values = self.get_range('Professors') # get all the cells
+        i = 1 # cells are one-indexed
         for row in values:
-            # Print columns B and G, which correspond to indices 1 and 6.
-            print('%s, %s' % (row[1], row[6] if len(row) >= 7 else None))
+            if (row[0] == prof.slug()):
+                return i
+            i += 1
+        return None
 
 if __name__ == '__main__':
-    connect()
+    gs = GoogleSheets()
+    gs.read_profs()
