@@ -1,5 +1,9 @@
 import os
 import urllib
+from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions
+from selenium.webdriver.common.by import By
 
 from web_util import *
 
@@ -25,6 +29,11 @@ class Professor:
         """ :return: a human-readable string identifying the professor, to be used to filenames and such. """
         return lower_alpha(self.school + ' ' + self.name)
 
+    def simple_name(self):
+        """:return: "firstname lastname" """
+        parts = self.name.split(' ')
+        return "%s %s" % (parts[0], parts[-1])
+
     def download_cv(self):
         wait()
         print "downloading CV for " + self.slug()
@@ -40,20 +49,24 @@ class Professor:
         with open(CV_PATH + '/' + self.slug() + ".pdf", 'wb') as f:
             f.write(r.content)
 
-    def find_google_scholar_page(self):
+    def find_google_scholar_page(self, selenium_driver):
         """NOTE: google is very proactive about blocking requests if it thinks you are a bot,
         so this sometimes results in a 503 error. """
         wait()
         # get search results page
-        tree = get_tree('https://scholar.google.com/scholar?q=author%%3A"%s"+%s' %
-                        (urllib.quote_plus(self.name), self.school))
-        if len(css_select(tree, 'div#gs_captcha_ccl')) > 0:
-            print "WARNING: got a CAPTCHA"
-            return
-        anchors = css_select(tree, 'h4.gs_rt2 a')
-        if len(anchors) > 0:
-            if len(anchors) > 1:
-                print "WARNING: multiple author pages found for %s" % self.name
-            self.google_scholar_url = "https://scholar.google.com" + anchors[0].get('href')
+        selenium_driver.get('https://scholar.google.com/scholar?q=author%%3A"%s"+%s' %
+                        (urllib.quote_plus(self.simple_name()), self.school))
+        try:
+            selenium_driver.find_element_by_css_selector('div#gs_captcha_ccl')
+        except NoSuchElementException:
+            pass
         else:
+            print "WARNING: got a CAPTCHA"
+            # wait until CAPTCHA is gone
+            WebDriverWait(selenium_driver, 99999).until(
+                expected_conditions.invisibility_of_element_located(By.ID, "gs_captcha_ccl"))
+        try:
+            anchor = selenium_driver.find_element_by_css_selector('h4.gs_rt2 a')
+            self.google_scholar_url = anchor.get_attribute('href')
+        except NoSuchElementException:
             self.google_scholar_url = None

@@ -11,10 +11,10 @@ Then just run ./scraper.py without any paramenters.
 '''
 
 import pprint
-import pickle
 import subprocess
 from professor import *
 from google_sheets import GoogleSheets
+from selenium import webdriver
 
 pp = pprint.PrettyPrinter(indent=4)
 CV_PATH = 'CVs'
@@ -106,3 +106,13 @@ if __name__ == '__main__':
     show_editorial_service(all_CVs)
     pp.pprint(profs)
     print "Total of %d professors found" % len(profs)
+
+    # TODO: remove below
+    # try to get google scholar pages where they are missing
+    selenium_driver = webdriver.Firefox()
+    random.shuffle(profs)
+    for p in profs:
+        if p.google_scholar_url is None:
+#    for p in [p for p in profs if p.name == "Brian Uzzi"]:
+            p.find_google_scholar_page(selenium_driver)
+            gs.save_prof(p)
