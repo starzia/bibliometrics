@@ -90,7 +90,9 @@ class GoogleSheets:
                                        cv_url=get_from_row(row,4),
                                        graduation_year=get_from_row(row,5),
                                        staff_id=get_from_row(row,6),
-                                       google_scholar_url=get_from_row(row,8)))
+                                       google_scholar_url=get_from_row(row,8),
+                                       alt_name=get_from_row(row,9),
+                                       graduation_school=get_from_row(row,10)))
         return profs
 
     def save_prof(self, prof):
@@ -102,7 +104,9 @@ class GoogleSheets:
                            prof.graduation_year,
                            prof.staff_id,
                            None, # hidden
-                           prof.google_scholar_url]]}
+                           prof.google_scholar_url,
+                           prof.alt_name,
+                           prof.graduation_school]]}
         row = self.get_row_for_prof(prof)
         if row is None:
             # append new row
