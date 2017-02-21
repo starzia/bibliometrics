@@ -47,6 +47,9 @@ class Professor:
         # get search results page
         tree = get_tree('https://scholar.google.com/scholar?q=author%%3A"%s"+%s' %
                         (urllib.quote_plus(self.name), self.school))
+        if len(css_select(tree, 'div#gs_captcha_ccl')) > 0:
+            print "WARNING: got a CAPTCHA"
+            return
         anchors = css_select(tree, 'h4.gs_rt2 a')
         if len(anchors) > 0:
             if len(anchors) > 1:

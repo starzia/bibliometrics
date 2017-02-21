@@ -16,5 +16,8 @@ def get_tree(url):
         print "WARNING got %d status code for %s" % (r.status_code, url)
     return lxml.html.fromstring(r.text)
 
+def print_tree(tree):
+    print lxml.etree.tostring(tree, pretty_print=True)
+
 def css_select(tree, css_selector):
     return CSSSelector(css_selector)(tree)
