@@ -19,7 +19,8 @@ def lower_alpha(str):
 
 class Professor:
     def __init__(self, school, name, title=None, cv_url=None, graduation_year=None, staff_id=None,
-                 google_scholar_url=None, graduation_school=None, alt_name=None):
+                 google_scholar_url=None, graduation_school=None, alt_name=None,
+                 faculty_directory_url=None):
         self.school = school
         self.name = name
         self.title = title
@@ -29,6 +30,7 @@ class Professor:
         self.staff_id = staff_id
         self.google_scholar_url = google_scholar_url
         self.alt_name = alt_name
+        self.faculty_directory_url = faculty_directory_url
 
     def __repr__(self):
         import pprint

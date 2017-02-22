@@ -2,9 +2,7 @@ from professor import Professor, title_is_tenure_track
 from web_util import get_tree, css_select
 
 def scrape_kellogg():
-    """
-    :return: a list of faculty objects for the Kellogg School of Management
-    """
+    """ :return: a list of Professor objects for the Kellogg School of Management """
     faculty = []
     # get the faculty index page
     tree = get_tree('http://www.kellogg.northwestern.edu/faculty/advanced_search.aspx')
@@ -19,8 +17,9 @@ def scrape_kellogg():
     return faculty
 
 def scrape_kellogg_faculty(netId):
-    """ :return: a faculty object or None if it's not a tenure track faculty """
-    tree = get_tree('http://www.kellogg.northwestern.edu/Faculty/Faculty_Search_Results.aspx?netid=' + netId)
+    """ :return: a Professor object or None if it's not a tenure track faculty """
+    directory_url = 'http://www.kellogg.northwestern.edu/Faculty/Faculty_Search_Results.aspx?netid=' + netId
+    tree = get_tree(directory_url)
     job_title = css_select(tree, 'span#lblTitle')[0].text
     if not title_is_tenure_track(job_title):
         return None
@@ -29,4 +28,5 @@ def scrape_kellogg_faculty(netId):
     for a in css_select(tree, 'div#sideNav3 a'):
         if "Download Vita (pdf)" in a.text:
             cv_link = a.get('href')
-    return Professor(name=name, title=job_title, cv_url=cv_link, school='Kellogg', staff_id=netId)
+    return Professor(name=name, title=job_title, cv_url=cv_link, school='Kellogg', staff_id=netId,
+                     faculty_directory_url=directory_url)

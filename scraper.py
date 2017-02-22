@@ -18,6 +18,7 @@ import pprint
 import subprocess
 from professor import *
 from school.kellogg import scrape_kellogg
+from school.harvard import scrape_harvard
 from google_sheets import GoogleSheets
 from selenium import webdriver
 
@@ -28,6 +29,7 @@ def scrape_all_schools():
     """as a side-effect this saves a pickled version of the returned list of professors"""
     profs = []
     profs.extend(scrape_kellogg())
+    profs.extend(scrape_harvard())
     pp.pprint(profs)
     return profs
 
