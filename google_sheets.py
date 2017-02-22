@@ -116,6 +116,7 @@ class GoogleSheets:
                                                          body=body).execute()
 
     def append_profs(self, profs):
+        """!!!: only call this if all the profs are new.  It will not try to update any rows, just append to the bottom."""
         data_values = []
         for p in profs:
             data_values.append(p.spreadsheet_row())

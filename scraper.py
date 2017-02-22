@@ -59,11 +59,13 @@ def show_editorial_service(all_CVs):
 
 def get_missing_google_scholar_pages(google_sheets, school=None):
     selenium_driver = webdriver.Firefox()
+    profs = google_sheets.read_profs()
     random.shuffle(profs)
     for p in profs:
         if school is not None and p.school != school:
             continue
         if p.google_scholar_url is None:
+            print p.name
             p.find_google_scholar_page(selenium_driver)
             google_sheets.save_prof(p)
     selenium_driver.close()
@@ -106,10 +108,9 @@ if __name__ == '__main__':
     do_reload = False
     if do_reload:
         profs = scrape_all_schools()
+        get_missing_google_scholar_pages(google_sheets)
         for p in profs:
             p.download_cv()
-            p.get_google_scholar_page()
-            google_sheets.save_prof(p)
         convert_CVs_to_text()
     profs = google_sheets.read_profs()
     all_CVs = load_CVs()
