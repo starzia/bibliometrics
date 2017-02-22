@@ -19,19 +19,13 @@ import subprocess
 from professor import *
 from school.kellogg import scrape_kellogg
 from school.harvard import scrape_harvard
+from school.uchicago import scrape_uchicago
+
 from google_sheets import GoogleSheets
 from selenium import webdriver
 
 pp = pprint.PrettyPrinter(indent=4)
 CV_PATH = 'CVs'
-
-def scrape_all_schools():
-    """as a side-effect this saves a pickled version of the returned list of professors"""
-    profs = []
-    profs.extend(scrape_kellogg())
-    profs.extend(scrape_harvard())
-    pp.pprint(profs)
-    return profs
 
 def convert_CVs_to_text():
     for file_path in os.listdir(CV_PATH):
@@ -62,10 +56,12 @@ def show_editorial_service(all_CVs):
             if ("editor" in line):
                 print line
 
-def get_missing_google_scholar_page(google_sheets, profs):
+def get_missing_google_scholar_pages(google_sheets, school=None):
     selenium_driver = webdriver.Firefox()
     random.shuffle(profs)
     for p in profs:
+        if school is not None and p.school != school:
+            continue
         if p.google_scholar_url is None:
             p.find_google_scholar_page(selenium_driver)
             google_sheets.save_prof(p)
@@ -85,6 +81,13 @@ def ask_for_graduation_years(google_sheets, profs):
                 p.graduation_year = int(year_str)
                 p.graduation_school = school
                 google_sheets.save_prof(p)
+
+def scrape_all_schools():
+    profs = []
+    profs.extend(scrape_kellogg())
+    profs.extend(scrape_harvard())
+    profs.extend(scrape_uchicago())
+    return profs
 
 if __name__ == '__main__':
     google_sheets = GoogleSheets()
