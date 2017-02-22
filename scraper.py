@@ -20,6 +20,7 @@ from professor import *
 from school.kellogg import scrape_kellogg
 from school.harvard import scrape_harvard
 from school.uchicago import scrape_uchicago
+from school.mit import scrape_mit
 
 from google_sheets import GoogleSheets
 from selenium import webdriver
@@ -87,6 +88,7 @@ def scrape_all_schools():
     profs.extend(scrape_kellogg())
     profs.extend(scrape_harvard())
     profs.extend(scrape_uchicago())
+    profs.extend(scrape_mit())
     return profs
 
 if __name__ == '__main__':

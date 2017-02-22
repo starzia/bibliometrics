@@ -89,7 +89,7 @@ class GoogleSheets:
                                        title=get_from_row(row,3),
                                        cv_url=get_from_row(row,4),
                                        graduation_year=get_from_row(row,5),
-                                       staff_id=get_from_row(row,6),
+                                       personal_url=get_from_row(row,6),
                                        google_scholar_url=get_from_row(row,8),
                                        alt_name=get_from_row(row,9),
                                        graduation_school=get_from_row(row,10),
@@ -103,7 +103,7 @@ class GoogleSheets:
                            prof.title,
                            prof.cv_url,
                            prof.graduation_year,
-                           prof.staff_id,
+                           prof.personal_url,
                            None, # hidden
                            prof.google_scholar_url,
                            prof.alt_name,

@@ -12,16 +12,16 @@ def lower_alpha(str):
     return ''.join(char for char in str.lower().replace(' ', '_') if char.isalnum() or char == '_')
 
 class Professor:
-    def __init__(self, school, name, title=None, cv_url=None, graduation_year=None, staff_id=None,
+    def __init__(self, school, name, title=None, cv_url=None, graduation_year=None,
                  google_scholar_url=None, graduation_school=None, alt_name=None,
-                 faculty_directory_url=None):
+                 faculty_directory_url=None, personal_url=None):
         self.school = school
         self.name = name
         self.title = title
         self.cv_url = cv_url
         self.graduation_year = graduation_year
         self.graduation_school = graduation_school
-        self.staff_id = staff_id
+        self.personal_url = personal_url
         self.google_scholar_url = google_scholar_url
         self.alt_name = alt_name
         self.faculty_directory_url = faculty_directory_url
