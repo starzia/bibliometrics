@@ -7,12 +7,6 @@ from selenium.webdriver.common.by import By
 
 from web_util import *
 
-def title_is_tenure_track(title):
-    lowercase = title.lower()
-    return "professor" in lowercase and "adjunct" not in lowercase and "emeritus" not in lowercase \
-                and "clinical" not in lowercase and "visiting" not in lowercase \
-                and "research assistant" not in lowercase
-
 def lower_alpha(str):
     """ :return: a transformation of the string including only lowercase letters and underscore"""
     return ''.join(char for char in str.lower().replace(' ', '_') if char.isalnum() or char == '_')
@@ -75,7 +69,7 @@ class Professor:
             print "WARNING: got a CAPTCHA"
             # wait until CAPTCHA is gone
             WebDriverWait(selenium_driver, 99999).until(
-                expected_conditions.invisibility_of_element_located(By.ID, "gs_captcha_ccl"))
+                expected_conditions.invisibility_of_element_located((By.ID, "gs_captcha_ccl")))
         try:
             anchor = selenium_driver.find_element_by_css_selector('h4.gs_rt2 a')
             self.google_scholar_url = anchor.get_attribute('href')

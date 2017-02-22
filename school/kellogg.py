@@ -1,32 +1,26 @@
-from professor import Professor, title_is_tenure_track
-from web_util import get_tree, css_select
+from professor_scraper import scrape_professors
+from web_util import css_select
 
-def scrape_kellogg():
-    """ :return: a list of Professor objects for the Kellogg School of Management """
-    faculty = []
-    # get the faculty index page
-    tree = get_tree('http://www.kellogg.northwestern.edu/faculty/advanced_search.aspx')
-    # look for the faculty options listed in a select element
+def get_kellogg_faculty_urls(tree):
+    urls = []
     for option in css_select(tree, 'select#plcprimarymaincontent_1_selBrowseByName option'):
         if (option.get('value') != ''):
-            print option.get('value') + ": " + option.text
             netId = option.get('value')
-            f = scrape_kellogg_faculty(netId)
-            if f is not None:
-                faculty.append(f)
-    return faculty
+            urls.append('http://www.kellogg.northwestern.edu/Faculty/Faculty_Search_Results.aspx?netid=' + netId)
+    return urls
 
-def scrape_kellogg_faculty(netId):
-    """ :return: a Professor object or None if it's not a tenure track faculty """
-    directory_url = 'http://www.kellogg.northwestern.edu/Faculty/Faculty_Search_Results.aspx?netid=' + netId
-    tree = get_tree(directory_url)
-    job_title = css_select(tree, 'span#lblTitle')[0].text
-    if not title_is_tenure_track(job_title):
-        return None
-    name = css_select(tree, 'span#lblName')[0].text
-    cv_link = None
+def get_kellogg_faculty_cv_url(tree):
     for a in css_select(tree, 'div#sideNav3 a'):
         if "Download Vita (pdf)" in a.text:
             cv_link = a.get('href')
-    return Professor(name=name, title=job_title, cv_url=cv_link, school='Kellogg', staff_id=netId,
-                     faculty_directory_url=directory_url)
+
+def scrape_kellogg():
+    return scrape_professors(school_name="Kellogg",
+                             directory_url='http://www.kellogg.northwestern.edu/faculty/advanced_search.aspx',
+                             extracts_faculty_urls_from_tree=get_kellogg_faculty_urls,
+                             job_title_selector='span#lblTitle',
+                             name_selector='span#lblName',
+                             extracts_cv_url_from_tree=get_kellogg_faculty_cv_url)
+
+if __name__ == '__main__':
+    profs = scrape_kellogg()
