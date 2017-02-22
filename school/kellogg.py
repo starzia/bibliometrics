@@ -1,4 +1,4 @@
-from professor_scraper import scrape_professors
+from professor_scraper import scrape_professors, Selector
 from web_util import css_select
 
 def get_kellogg_faculty_urls(tree):
@@ -19,7 +19,7 @@ def scrape_kellogg():
     return scrape_professors(school_name="Kellogg",
                              directory_url='http://www.kellogg.northwestern.edu/faculty/advanced_search.aspx',
                              extracts_faculty_urls_from_tree=get_kellogg_faculty_urls,
-                             job_title_selector='span#lblTitle',
+                             extracts_title_from_tree=Selector('span#lblTitle'),
                              name_selector='span#lblName',
                              extracts_cv_url_from_tree=get_kellogg_faculty_cv_url)
 

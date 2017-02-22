@@ -14,9 +14,27 @@ def strip_whitespace(str):
         return None
     return re.sub(r"\s+", ' ', str).strip()
 
+class Selector:
+    def __init__(self, css_selector):
+        self.css_selector = css_selector
+    def __call__(self, tree):
+        try:
+            return css_select(tree, self.css_selector)[0].text
+        except AttributeError:
+            return None
+
+class HrefSelector:
+    def __init__(self, css_selector, anchor_text):
+        self.css_selector = css_selector
+        self.anchor_text = anchor_text
+    def __call__(self, tree):
+        for a in css_select(tree, self.css_selector):
+            if self.anchor_text in a.text:
+                return a.get('href')
+
 def scrape_professors(school_name, directory_url,
                       extracts_faculty_urls_from_tree,
-                      job_title_selector, name_selector,
+                      extracts_title_from_tree, name_selector,
                       extracts_cv_url_from_tree=None,
                       extracts_personal_url_from_tree=None,
                       extracts_google_scholar_url_from_tree=None):
@@ -26,23 +44,23 @@ def scrape_professors(school_name, directory_url,
     tree = get_tree(directory_url)
     for faculty_url in extracts_faculty_urls_from_tree(tree):
         sleep(2)
-        p = scrape_professor(school_name, faculty_url, job_title_selector, name_selector, extracts_cv_url_from_tree,
+        p = scrape_professor(school_name, faculty_url,
+                             extracts_title_from_tree, name_selector, extracts_cv_url_from_tree,
                              extracts_personal_url_from_tree, extracts_google_scholar_url_from_tree)
         if p is not None:
             print p
             profs.append(p)
     return profs
 
-def scrape_professor(school_name, faculty_url, job_title_selector, name_selector, extracts_cv_url_from_tree,
+def scrape_professor(school_name, faculty_url, extracts_title_from_tree, name_selector, extracts_cv_url_from_tree,
                      extracts_personal_url_from_tree, extracts_google_scholar_url_from_tree):
     """ :return: a Professor object or None if it's not a tenure track faculty """
     tree = get_tree(faculty_url)
-    try:
-        job_title = strip_whitespace(css_select(tree, job_title_selector)[0].text)
-        if not title_is_tenure_track(job_title):
-            return None
-    except AttributeError:
+    job_title = strip_whitespace(extracts_title_from_tree(tree))
+    if job_title is None:
         print "WARNING: job title not found on "+faculty_url
+        return None
+    if not title_is_tenure_track(job_title):
         return None
     name = strip_whitespace(css_select(tree, name_selector)[0].text)
     cv_link = None if extracts_cv_url_from_tree is None else extracts_cv_url_from_tree(tree)
