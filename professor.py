@@ -48,7 +48,7 @@ class Professor:
                 self.faculty_directory_url]
 
     @classmethod
-    def from_spreadsheet_row(row):
+    def from_spreadsheet_row(cls, row):
         return Professor(name=get_from_row(row, 2),
                          school=get_from_row(row, 1),
                          title=get_from_row(row, 3),
@@ -59,6 +59,12 @@ class Professor:
                          alt_name=get_from_row(row, 9),
                          graduation_school=get_from_row(row, 10),
                          faculty_directory_url=get_from_row(row, 11))
+
+    def merge(self, other_prof):
+        """add any non-None attributes from the other_prof"""
+        for attr, value in other_prof.__dict__.iteritems():
+            if value is not None and getattr(self, attr) is None:
+                setattr(self, attr, value)
 
     def __repr__(self):
         import pprint

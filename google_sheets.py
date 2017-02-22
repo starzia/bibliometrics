@@ -99,6 +99,22 @@ class GoogleSheets:
                                                         range='Professors!%d:%d' % (row, row),
                                                         body=data).execute()
 
+    def update_profs(self, profs):
+        rows = self.get_rows_for_profs(profs)
+        updates = []
+        i=0
+        for p in profs:
+            updates.append({'range':'Professors!%d:%d' % (rows[i], rows[i]),
+                            'values':[p.spreadsheet_row()]})
+            i += 1
+        # batch update
+        body = {
+            'valueInputOption':'RAW',
+            'data':updates
+        }
+        self.service.spreadsheets().values().batchUpdate(spreadsheetId=self.SHEET_ID,
+                                                         body=body).execute()
+
     def append_profs(self, profs):
         data_values = []
         for p in profs:
@@ -109,15 +125,22 @@ class GoogleSheets:
                                                     range='Professors',
                                                     body={'values':data_values}).execute()
 
-    # TODO: cache these results to make it more efficient
     def get_row_for_prof(self, prof):
+        return self.get_rows_for_profs([prof])[0]
+
+    def get_rows_for_profs(self, profs):
+        row_indices = []
         values = self.get_range('Professors') # get all the cells
-        i = 1 # cells are one-indexed
-        for row in values:
-            if (row[0] == prof.slug()):
-                return i
-            i += 1
-        return None
+        for p in profs:
+            i = 1 # cells are one-indexed
+            matching_i = None
+            for row in values:
+                if (row[0] == p.slug()):
+                    matching_i = i
+                    break
+                i += 1
+            row_indices.append(matching_i)
+        return row_indices
 
 if __name__ == '__main__':
     gs = GoogleSheets()

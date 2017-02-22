@@ -7,6 +7,12 @@ def get_personal_url(tree):
             return a.get('href')
     return None
 
+def get_google_scholar_url(tree):
+    for a in css_select(tree, 'aside.faculty-side a'):
+        if "Google Scholar" in a.text:
+            return a.get('href')
+    return None
+
 def scrape_mit():
     return scrape_professors(school_name="MIT",
                              directory_url='http://mitsloan.mit.edu/faculty-and-research/faculty-directory/',
@@ -15,7 +21,8 @@ def scrape_mit():
                              job_title_selector='ul.ctl00_content_titles:first-of-type',
                              name_selector='div.inner-wrapper h3:first-of-type',
                              extracts_cv_url_from_tree=None,
-                             extracts_personal_url_from_tree=get_personal_url)
+                             extracts_personal_url_from_tree=get_personal_url,
+                             extracts_google_scholar_url_from_tree=get_google_scholar_url)
 
 if __name__ == '__main__':
     profs = scrape_mit()
