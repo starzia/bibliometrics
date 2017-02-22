@@ -4,7 +4,7 @@ This is written in Python 3
 
 To prepare, run:
 pip install --user lxml cssselect requests pprint
-# pdfminer installs the pdf2txt.py command joblib selenium
+# pdfminer installs the pdf2txt.py command joblib selenium unidecode
 pip install pdfminer
 
 install selenium Gecko and Chrome drivers from:

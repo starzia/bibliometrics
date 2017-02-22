@@ -5,6 +5,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.common.by import By
 
+from unidecode import unidecode
+
 from web_util import *
 from google_sheets_util import get_from_row
 
@@ -75,9 +77,9 @@ class Professor:
         return lower_alpha(self.school + ' ' + self.name)
 
     def simple_name(self):
-        """:return: "firstname lastname" """
+        """:return: "firstname lastname" and also removed any character diacritics (accents)."""
         parts = self.name.split(' ')
-        return "%s %s" % (parts[0], parts[-1])
+        return unidecode("%s %s" % (parts[0], parts[-1]))
 
     def download_cv(self):
         wait()
