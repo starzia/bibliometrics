@@ -12,7 +12,8 @@ def get_kellogg_faculty_urls(tree):
 def get_kellogg_faculty_cv_url(tree):
     for a in css_select(tree, 'div#sideNav3 a'):
         if "Download Vita (pdf)" in a.text:
-            cv_link = a.get('href')
+            return a.get('href')
+    return None
 
 def scrape_kellogg():
     return scrape_professors(school_name="Kellogg",
