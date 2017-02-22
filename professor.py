@@ -6,10 +6,17 @@ from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.common.by import By
 
 from web_util import *
+from google_sheets_util import get_from_row
 
 def lower_alpha(str):
     """ :return: a transformation of the string including only lowercase letters and underscore"""
     return ''.join(char for char in str.lower().replace(' ', '_') if char.isalnum() or char == '_')
+
+def get_from_row(row, column_idx):
+    """get the value from the specified column index, or return None if it's empty"""
+    if (len(row) <= column_idx) or row[column_idx] == "":
+        return None
+    return row[column_idx]
 
 class Professor:
     def __init__(self, school, name, title=None, cv_url=None, graduation_year=None,
@@ -25,6 +32,33 @@ class Professor:
         self.google_scholar_url = google_scholar_url
         self.alt_name = alt_name
         self.faculty_directory_url = faculty_directory_url
+
+    def spreadsheet_row(self):
+        return [self.slug(),
+                self.school,
+                self.name,
+                self.title,
+                self.cv_url,
+                self.graduation_year,
+                self.personal_url,
+                None,  # hidden
+                self.google_scholar_url,
+                self.alt_name,
+                self.graduation_school,
+                self.faculty_directory_url]
+
+    @classmethod
+    def from_spreadsheet_row(row):
+        return Professor(name=get_from_row(row, 2),
+                         school=get_from_row(row, 1),
+                         title=get_from_row(row, 3),
+                         cv_url=get_from_row(row, 4),
+                         graduation_year=get_from_row(row, 5),
+                         personal_url=get_from_row(row, 6),
+                         google_scholar_url=get_from_row(row, 8),
+                         alt_name=get_from_row(row, 9),
+                         graduation_school=get_from_row(row, 10),
+                         faculty_directory_url=get_from_row(row, 11))
 
     def __repr__(self):
         import pprint

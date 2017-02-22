@@ -7,6 +7,7 @@ from oauth2client import tools
 from oauth2client.file import Storage
 
 from professor import Professor
+from google_sheets_util import get_from_row
 
 # based on https://developers.google.com/sheets/api/quickstart/python
 
@@ -48,12 +49,6 @@ def get_credentials():
         print('Storing credentials to ' + credential_path)
     return credentials
 
-def get_from_row(row, column_idx):
-    """get the value from the specified column index, or return None if it's empty"""
-    if (len(row) <= column_idx) or row[column_idx] == "":
-        return None
-    return row[column_idx]
-
 class GoogleSheets:
     SHEET_ID = '1TT3l1CKt2GLG_ZUJOV2F7RHGBIECsgnGJLO7hQ0Y_qI'
 
@@ -84,31 +79,11 @@ class GoogleSheets:
                 # skip hidden rows
                 if get_from_row(row, 7) is not None:
                     continue
-                profs.append(Professor(name=get_from_row(row,2),
-                                       school=get_from_row(row, 1),
-                                       title=get_from_row(row,3),
-                                       cv_url=get_from_row(row,4),
-                                       graduation_year=get_from_row(row,5),
-                                       personal_url=get_from_row(row,6),
-                                       google_scholar_url=get_from_row(row,8),
-                                       alt_name=get_from_row(row,9),
-                                       graduation_school=get_from_row(row,10),
-                                       faculty_directory_url=get_from_row(row,11)))
+                profs.append(Professor.from_spreadsheet_row(row))
         return profs
 
     def save_prof(self, prof):
-        data = {'values':[[prof.slug(),
-                           prof.school,
-                           prof.name,
-                           prof.title,
-                           prof.cv_url,
-                           prof.graduation_year,
-                           prof.personal_url,
-                           None, # hidden
-                           prof.google_scholar_url,
-                           prof.alt_name,
-                           prof.graduation_school,
-                           prof.faculty_directory_url]]}
+        data = {'values':[prof.spreadsheet_row()]}
         row = self.get_row_for_prof(prof)
         if row is None:
             # append new row
@@ -123,6 +98,16 @@ class GoogleSheets:
                                                         valueInputOption='RAW',
                                                         range='Professors!%d:%d' % (row, row),
                                                         body=data).execute()
+
+    def append_profs(self, profs):
+        data_values = []
+        for p in profs:
+            data_values.append(p.spreadsheet_row())
+        self.service.spreadsheets().values().append(spreadsheetId=self.SHEET_ID,
+                                                    valueInputOption='RAW',
+                                                    insertDataOption="INSERT_ROWS",
+                                                    range='Professors',
+                                                    body={'values':data_values}).execute()
 
     # TODO: cache these results to make it more efficient
     def get_row_for_prof(self, prof):
