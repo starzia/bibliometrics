@@ -1,5 +1,5 @@
 #!/usr/bin/python
-'''
+"""
 This is written in Python 3
 
 To prepare, run:
@@ -12,7 +12,7 @@ https://github.com/mozilla/geckodriver/releases
 https://sites.google.com/a/chromium.org/chromedriver/downloads
 
 Then just run ./scraper.py without any parameters.
-'''
+"""
 
 import pprint
 import subprocess
@@ -21,12 +21,14 @@ from school.kellogg import scrape_kellogg
 from school.harvard import scrape_harvard
 from school.uchicago import scrape_uchicago
 from school.mit import scrape_mit
+from school.stanford import scrape_stanford
 
 from google_sheets import GoogleSheets
 from selenium import webdriver
 
 pp = pprint.PrettyPrinter(indent=4)
 CV_PATH = 'CVs'
+
 
 def convert_CVs_to_text():
     for file_path in os.listdir(CV_PATH):
@@ -39,6 +41,7 @@ def convert_CVs_to_text():
             with open(CV_PATH + '/' + slug + '.txt', 'w') as f:
                 f.write(cv)
 
+
 def load_CVs():
     """ :return: a dictionary mapping name slugs to cv strings"""
     all_CVs = {}
@@ -49,13 +52,15 @@ def load_CVs():
                 all_CVs[slug] = f.read()
     return all_CVs
 
+
 def show_editorial_service(all_CVs):
     for name, cv in all_CVs.iteritems():
         print
         print name
         for line in cv.lower().splitlines():
-            if ("editor" in line):
+            if "editor" in line:
                 print line
+
 
 def get_missing_google_scholar_pages(google_sheets, school=None):
     selenium_driver = webdriver.Firefox()
@@ -69,6 +74,7 @@ def get_missing_google_scholar_pages(google_sheets, school=None):
             p.find_google_scholar_page(selenium_driver)
             google_sheets.save_prof(p)
     selenium_driver.close()
+
 
 def ask_for_graduation_years(google_sheets, profs):
     for p in profs:
@@ -85,13 +91,16 @@ def ask_for_graduation_years(google_sheets, profs):
                 p.graduation_school = school
                 google_sheets.save_prof(p)
 
+
 def scrape_all_schools():
     profs = []
     profs.extend(scrape_kellogg())
     profs.extend(scrape_harvard())
     profs.extend(scrape_uchicago())
     profs.extend(scrape_mit())
+    profs.extend(scrape_stanford())
     return profs
+
 
 def rescrape(gs, school_scraper):
     profs = gs.read_profs()
@@ -102,6 +111,7 @@ def rescrape(gs, school_scraper):
                 print "merging new data for " + p.slug
                 p.merge(p2)
     gs.update_profs(new_profs)
+
 
 if __name__ == '__main__':
     google_sheets = GoogleSheets()
