@@ -52,6 +52,7 @@ def scrape_professors(school_name, directory_url,
     tree = get_tree(directory_url)
     for faculty_url in extracts_faculty_urls_from_tree(tree):
         sleep(2)
+        print "scraping " + faculty_url
         p = scrape_professor(school_name, faculty_url,
                              extracts_title_from_tree, extracts_name_from_tree, extracts_cv_url_from_tree,
                              extracts_personal_url_from_tree, extracts_google_scholar_url_from_tree)
