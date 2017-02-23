@@ -52,12 +52,12 @@ def scrape_professors(school_name, directory_url,
     tree = get_tree(directory_url)
     for faculty_url in extracts_faculty_urls_from_tree(tree):
         sleep(2)
-        print "scraping " + faculty_url
+        print("scraping " + faculty_url)
         p = scrape_professor(school_name, faculty_url,
                              extracts_title_from_tree, extracts_name_from_tree, extracts_cv_url_from_tree,
                              extracts_personal_url_from_tree, extracts_google_scholar_url_from_tree)
         if p is not None:
-            print p
+            print(p)
             profs.append(p)
     return profs
 
@@ -73,7 +73,7 @@ def scrape_professor(school_name,
     tree = get_tree(faculty_url)
     job_title = strip_whitespace(extracts_title_from_tree(tree))
     if job_title is None:
-        print "WARNING: job title not found on "+faculty_url
+        print("WARNING: job title not found on "+faculty_url)
         return None
     if not title_is_tenure_track(job_title):
         return None

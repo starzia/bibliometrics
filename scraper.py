@@ -1,17 +1,6 @@
 #!/usr/bin/python
 """
-This is written in Python 3
-
-To prepare, run:
-pip install --user lxml cssselect requests pprint
-# pdfminer installs the pdf2txt.py command joblib selenium unidecode
-pip install pdfminer
-
-install selenium Gecko and Chrome drivers from:
-https://github.com/mozilla/geckodriver/releases
-https://sites.google.com/a/chromium.org/chromedriver/downloads
-
-Then just run ./scraper.py without any parameters.
+the main script
 """
 
 import pprint
@@ -22,6 +11,7 @@ from school.harvard import scrape_harvard
 from school.uchicago import scrape_uchicago
 from school.mit import scrape_mit
 from school.stanford import scrape_stanford
+from school.upenn import scrape_upenn
 
 from google_sheets import GoogleSheets
 from selenium import webdriver
@@ -34,7 +24,7 @@ def convert_CVs_to_text():
     for file_path in os.listdir(CV_PATH):
         if file_path.endswith(".pdf"):
             slug = file_path.replace('.pdf','')
-            print 'reading ' + file_path
+            print('reading ' + file_path)
             # The commandline version of pdf2txt actually works better than the Python slate package.
             # Slate drops a lot of whitespace and newlines.
             cv = subprocess.check_output(['pdf2txt.py', CV_PATH + '/' + file_path])
@@ -55,11 +45,11 @@ def load_CVs():
 
 def show_editorial_service(all_CVs):
     for name, cv in all_CVs.iteritems():
-        print
-        print name
+        print()
+        print(name)
         for line in cv.lower().splitlines():
             if "editor" in line:
-                print line
+                print(line)
 
 
 def get_missing_google_scholar_pages(google_sheets, school=None):
@@ -70,7 +60,7 @@ def get_missing_google_scholar_pages(google_sheets, school=None):
         if school is not None and p.school != school:
             continue
         if p.google_scholar_url is None:
-            print p.name
+            print(p.name)
             p.find_google_scholar_page(selenium_driver)
             google_sheets.save_prof(p)
     selenium_driver.close()
@@ -83,9 +73,9 @@ def ask_for_graduation_years(google_sheets, profs):
             # !!!: this works on Mac only
             subprocess.check_output("curl %s | open -f -a Preview" % p.cv_url, shell=True)
             # ask for the graduation year
-            print p.name
-            school = raw_input("Graduation School? ")
-            year_str = raw_input("Graduation Year? ")
+            print(p.name)
+            school = input("Graduation School? ")
+            year_str = input("Graduation Year? ")
             if year_str is not None and len(year_str) > 0:
                 p.graduation_year = int(year_str)
                 p.graduation_school = school
@@ -99,6 +89,7 @@ def scrape_all_schools():
     profs.extend(scrape_uchicago())
     profs.extend(scrape_mit())
     profs.extend(scrape_stanford())
+    profs.extend(scrape_upenn())
     return profs
 
 
@@ -108,7 +99,7 @@ def rescrape(gs, school_scraper):
     for p in new_profs:
         for p2 in profs:
             if p2.slug == p.slug:
-                print "merging new data for " + p.slug
+                print("merging new data for " + p.slug)
                 p.merge(p2)
     gs.update_profs(new_profs)
 
@@ -124,4 +115,4 @@ if __name__ == '__main__':
         convert_CVs_to_text()
     profs = google_sheets.read_profs()
     all_CVs = load_CVs()
-    print "Total of %d professors found" % len(profs)
+    print("Total of %d professors found" % len(profs))

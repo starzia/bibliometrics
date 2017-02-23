@@ -83,9 +83,9 @@ class Professor:
 
     def download_cv(self):
         wait()
-        print "downloading CV for " + self.slug()
+        print("downloading CV for " + self.slug())
         if self.cv_url is None:
-            print "WARNING: missing CV!"
+            print("WARNING: missing CV!")
             return
 
         global CV_PATH
@@ -108,7 +108,7 @@ class Professor:
         except NoSuchElementException:
             pass
         else:
-            print "WARNING: got a CAPTCHA"
+            print("WARNING: got a CAPTCHA")
             # wait until CAPTCHA is gone
             WebDriverWait(selenium_driver, 99999).until(
                 expected_conditions.invisibility_of_element_located((By.ID, "gs_captcha_ccl")))

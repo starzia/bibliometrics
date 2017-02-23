@@ -19,7 +19,7 @@ def get_kellogg_faculty_cv_url(tree):
 
 
 def scrape_kellogg():
-    return scrape_professors(school_name="Kellogg",
+    return scrape_professors(school_name="Northwestern",
                              directory_url='http://www.kellogg.northwestern.edu/faculty/advanced_search.aspx',
                              extracts_faculty_urls_from_tree=get_kellogg_faculty_urls,
                              extracts_title_from_tree=Selector('span#lblTitle'),
