@@ -102,7 +102,7 @@ class Professor:
         wait()
         # get search results page
         selenium_driver.get('https://scholar.google.com/scholar?q=author%%3A"%s"+%s' %
-                        (urllib.quote_plus(self.simple_name()), self.school))
+                        (urllib.parse.quote(self.simple_name()), self.school))
         try:
             selenium_driver.find_element_by_css_selector('div#gs_captcha_ccl')
         except NoSuchElementException:
