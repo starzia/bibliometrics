@@ -14,8 +14,12 @@ def get_faculty_urls(tree):
             if 'FACULTY BY NAME' in h4.text:
                 directory_div = True
     for a in css_select(directory_div, 'div.wpb_wrapper a'):
-        if a.get('href') is not None:
-            urls.append(a.get('href').strip())
+        url = a.get('href')
+        if url is not None:
+            if "wharton.upenn.edu" in url:
+                urls.append(url.strip())
+            else:
+                "WARNING: dropping non-Wharton faculty: "+url
     return urls
 
 

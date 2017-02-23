@@ -71,6 +71,8 @@ def scrape_professor(school_name,
                      extracts_google_scholar_url_from_tree):
     """ :return: a Professor object or None if it's not a tenure track faculty """
     tree = get_tree(faculty_url)
+    if tree is None:
+        return None
     job_title = strip_whitespace(extracts_title_from_tree(tree))
     if job_title is None:
         print("WARNING: job title not found on "+faculty_url)
