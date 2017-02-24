@@ -67,6 +67,7 @@ class GoogleSheets:
     def read_profs(self):
         """:return: a list of Professor objects"""
         values = self.get_range('Professors')
+        print("read %d rows" % len(values))
         profs = []
         if not values:
             print('No data found.')
@@ -100,6 +101,7 @@ class GoogleSheets:
                                                         body=data).execute()
 
     def update_profs(self, profs):
+        """This only works if all the professors have already been saved to the spreadsheet."""
         rows = self.get_rows_for_profs(profs)
         updates = []
         i=0
