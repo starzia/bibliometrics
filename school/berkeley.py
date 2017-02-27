@@ -1,4 +1,4 @@
-from professor_scraper import scrape_professors, Selector, HrefSelector, strip_whitespace
+from professor_scraper import scrape_professors, Selector, HrefSelector, HrefListSelector, strip_whitespace
 from web_util import css_select
 
 def get_title(tree):
@@ -14,8 +14,7 @@ def get_title(tree):
 def scrape_berkeley():
     return scrape_professors(school_name='Berkeley',
                              directory_url='http://facultybio.haas.berkeley.edu/faculty-photo/',
-                             extracts_faculty_urls=\
-                lambda tree: [a.get('href').strip() for a in css_select(tree, 'div.faculty-block p a[href]')],
+                             extracts_faculty_urls=HrefListSelector('div.faculty-block p a[href]'),
                              extracts_title=get_title,
                              extracts_name=Selector('td p span strong'),
                              extracts_cv_url=HrefSelector('td p a', 'Curriculum Vitae'),

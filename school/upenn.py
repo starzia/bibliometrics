@@ -31,8 +31,7 @@ def scrape_upenn():
                              extracts_name=Selector('div.wfp-header h1'),
                              extracts_cv_url=HrefSelector('wfp-header-research a', 'CV'),
                              extracts_personal_url=HrefSelector('wfp-header-research a', 'Personal Website'),
-                             extracts_gscholar_url=HrefSelector('wfp-header-research a',
-                                                                                'Google Scholar'))
+                             extracts_gscholar_url=HrefSelector('wfp-header-research a', 'Google Scholar'))
 
 if __name__ == '__main__':
     profs = scrape_upenn()

@@ -1,13 +1,10 @@
-from professor_scraper import scrape_professors, Selector, HrefSelector
-from web_util import css_select
+from professor_scraper import scrape_professors, Selector, HrefSelector, HrefListSelector
 
 
 def scrape_columbia():
     return scrape_professors(school_name='Columbia',
                              directory_url='http://www8.gsb.columbia.edu/faculty-research/faculty-directory?full_time=y&division=All&op=Search',
-                             extracts_faculty_urls=\
-                                 lambda tree: ['http://www8.gsb.columbia.edu' + a.get('href').strip()
-                                               for a in css_select(tree, 'div.name a')],
+                             extracts_faculty_urls=HrefListSelector('div.name a'),
                              extracts_name=Selector('h1.primary-heading'),
                              extracts_title=Selector('span.affiliation-title'),
                              # for CV and personal website, see http://www8.gsb.columbia.edu/cbs-directory/detail/ea1

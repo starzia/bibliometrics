@@ -1,5 +1,4 @@
-from professor_scraper import scrape_professors, Selector, HrefSelector
-from web_util import css_select
+from professor_scraper import scrape_professors, Selector, HrefSelector, HrefListSelector
 
 
 # NOTE: one prof has a totally different page format that I had to manually scrape
@@ -8,9 +7,7 @@ from web_util import css_select
 def scrape_yale():
     return scrape_professors(school_name='Yale',
                              directory_url='http://som.yale.edu/faculty-research/faculty-directory',
-                             extracts_faculty_urls=\
-                                 lambda tree: ['http://som.yale.edu' + a.get('href').strip()
-                                               for a in css_select(tree, 'h4.faculty--teaser-name a')],
+                             extracts_faculty_urls=HrefListSelector('h4.faculty--teaser-name a'),
                              extracts_name=Selector('h1.title'),
                              extracts_title=Selector('h2.sub-title'),
                              # for CV and GS, see: http://som.yale.edu/victoria-l-brescoll

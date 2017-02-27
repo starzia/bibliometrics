@@ -6,7 +6,8 @@ import urllib.parse
 
 def title_is_tenure_track(title):
     lowercase = title.lower()
-    return "professor" in lowercase and "adjunct" not in lowercase and "emeritus" not in lowercase \
+    return "professor" in lowercase and "adjunct" not in lowercase \
+                and "emeritus" not in lowercase and 'emerita' not in lowercase \
                 and "clinical" not in lowercase and "visiting" not in lowercase \
                 and "research assistant" not in lowercase
 
@@ -39,6 +40,29 @@ class HrefSelector:
                 return urllib.parse.urljoin(current_url, a.get('href'))
 
 
+class ListSelector:
+    def __init__(self, css_selector):
+        self.css_selector = css_selector
+
+    def __call__(self, tree):
+        try:
+            return [strip_whitespace(e.text) for e in css_select(tree, self.css_selector)]
+        except (IndexError, AttributeError):
+            return None
+
+
+class HrefListSelector:
+    def __init__(self, css_selector):
+        self.css_selector = css_selector
+
+    def __call__(self, current_url, tree):
+        try:
+            return [urllib.parse.urljoin(current_url, e.get('href').strip())
+                    for e in css_select(tree, self.css_selector)]
+        except (IndexError, AttributeError):
+            return None
+
+
 def scrape_professors(school_name, directory_url,
                       extracts_faculty_urls,
                       extracts_title,
@@ -50,7 +74,7 @@ def scrape_professors(school_name, directory_url,
     profs = []
     # get the faculty index page
     tree = get_tree(directory_url)
-    for faculty_url in extracts_faculty_urls(tree):
+    for faculty_url in extracts_faculty_urls(directory_url, tree):
         sleep(2)
         print("scraping " + faculty_url)
         p = scrape_professor(school_name, faculty_url,
