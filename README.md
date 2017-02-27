@@ -2,7 +2,7 @@ This is written for Python 3
 
 Preparation
 -----------
-pip install --user lxml cssselect pprint selenium unidecode google-api-python-client pycurl
+pip install --user lxml cssselect pprint selenium unidecode google-api-python-client pycurl bs4
 
 # pdfminer installs the pdf2txt.py command
 pip install pdfminer

@@ -8,8 +8,8 @@ def scrape_yale():
                              extracts_faculty_urls_from_tree=\
                                  lambda tree: ['http://som.yale.edu' + a.get('href').strip()
                                                for a in css_select(tree, 'h4.faculty--teaser-name a')],
-                             extracts_title_from_tree=Selector('h1.title'),
-                             extracts_name_from_tree=Selector('h2.sub-title'),
+                             extracts_name_from_tree=Selector('h1.title'),
+                             extracts_title_from_tree=Selector('h2.sub-title'),
                              # for CV and GS, see: http://som.yale.edu/victoria-l-brescoll
                              extracts_cv_url_from_tree=HrefSelector('ul.faculty--info-list li.url a', 'CV'),
                              # for website, see: http://som.yale.edu/nicholas-c-barberis

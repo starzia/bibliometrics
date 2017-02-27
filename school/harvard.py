@@ -23,8 +23,8 @@ def scrape_harvard():
                              directory_url='http://www.hbs.edu/faculty/Pages/browse.aspx',
                              extracts_faculty_urls_from_tree=\
       lambda tree: ['http://www.hbs.edu' + a.get('href').strip() for a in css_select(tree, 'div.faculty-item a')],
-                             extracts_title_from_tree=Selector('p.faculty-title:first-of-type'),
-                             extracts_name_from_tree=Selector('h1.author:first-of-type'),
+                             extracts_title_from_tree=Selector('p.faculty-title:nth-of-type(1)'),
+                             extracts_name_from_tree=Selector('h1.author:nth-of-type(1)'),
                              extracts_cv_url_from_tree=get_cv_url,
                              extracts_personal_url_from_tree=get_personal_url)
 

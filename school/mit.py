@@ -16,7 +16,7 @@ def scrape_mit():
                              extracts_faculty_urls_from_tree=\
       lambda tree: ['http://mitsloan.mit.edu' + a.get('href').strip() for a in css_select(tree, 'div.person-result a')],
                              extracts_title_from_tree=get_title,
-                             extracts_name_from_tree=Selector('div.innerwrapper h3:first-of-type'),
+                             extracts_name_from_tree=Selector('div.innerwrapper h3:nth-of-type(1)'),
                              extracts_cv_url_from_tree=None,
                              extracts_personal_url_from_tree=HrefSelector('aside.faculty-side a', 'Personal Website'),
                              extracts_google_scholar_url_from_tree=HrefSelector('aside.faculty-side a', 'Google Scholar'))
