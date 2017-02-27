@@ -20,13 +20,13 @@ def get_name(tree):
 def scrape_stanford():
     return scrape_professors(school_name="Stanford",
                              directory_url='https://www.gsb.stanford.edu/faculty-research/faculty',
-                             extracts_faculty_urls_from_tree=get_faculty_urls,
-                             extracts_title_from_tree=Selector('div.field-name-field-title-appointment'),
-                             extracts_name_from_tree=get_name,
-                             extracts_cv_url_from_tree=HrefSelector('div.field-name-field-file-single-public a', 'CV'),
-                             extracts_personal_url_from_tree=HrefSelector('div.field-name-field-link-website a',
+                             extracts_faculty_urls=get_faculty_urls,
+                             extracts_title=Selector('div.field-name-field-title-appointment'),
+                             extracts_name=get_name,
+                             extracts_cv_url=HrefSelector('div.field-name-field-file-single-public a', 'CV'),
+                             extracts_personal_url=HrefSelector('div.field-name-field-link-website a',
                                                                           'Personal Website'),
-                             extracts_google_scholar_url_from_tree=HrefSelector('div.field-name-field-file-single-public a',
+                             extracts_gscholar_url=HrefSelector('div.field-name-field-file-single-public a',
                                                                                 'Google Scholar'))
 
 if __name__ == '__main__':

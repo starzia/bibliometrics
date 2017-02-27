@@ -1,5 +1,6 @@
 import os
 import urllib
+import requests
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions

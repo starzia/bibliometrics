@@ -14,6 +14,9 @@ from school.stanford import scrape_stanford
 from school.upenn import scrape_upenn
 from school.berkeley import scrape_berkeley
 from school.dartmouth import scrape_dartmouth
+from school.yale import scrape_yale
+from school.columbia import scrape_columbia
+
 
 from google_sheets import GoogleSheets
 from selenium import webdriver
@@ -94,6 +97,8 @@ def scrape_all_schools():
     profs.extend(scrape_upenn())
     profs.extend(scrape_berkeley())
     profs.extend(scrape_dartmouth())
+    profs.extend(scrape_yale())
+    profs.extend(scrape_columbia())
     return profs
 
 

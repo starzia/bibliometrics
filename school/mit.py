@@ -13,13 +13,13 @@ def get_title(tree):
 def scrape_mit():
     return scrape_professors(school_name="MIT",
                              directory_url='http://mitsloan.mit.edu/faculty-and-research/faculty-directory/',
-                             extracts_faculty_urls_from_tree=\
+                             extracts_faculty_urls=\
       lambda tree: ['http://mitsloan.mit.edu' + a.get('href').strip() for a in css_select(tree, 'div.person-result a')],
-                             extracts_title_from_tree=get_title,
-                             extracts_name_from_tree=Selector('div.innerwrapper h3:nth-of-type(1)'),
-                             extracts_cv_url_from_tree=None,
-                             extracts_personal_url_from_tree=HrefSelector('aside.faculty-side a', 'Personal Website'),
-                             extracts_google_scholar_url_from_tree=HrefSelector('aside.faculty-side a', 'Google Scholar'))
+                             extracts_title=get_title,
+                             extracts_name=Selector('div.innerwrapper h3:nth-of-type(1)'),
+                             extracts_cv_url=None,
+                             extracts_personal_url=HrefSelector('aside.faculty-side a', 'Personal Website'),
+                             extracts_gscholar_url=HrefSelector('aside.faculty-side a', 'Google Scholar'))
 
 if __name__ == '__main__':
     profs = scrape_mit()

@@ -26,12 +26,12 @@ def get_faculty_urls(tree):
 def scrape_upenn():
     return scrape_professors(school_name='UPenn',
                              directory_url='https://www.wharton.upenn.edu/faculty-directory/',
-                             extracts_faculty_urls_from_tree=get_faculty_urls,
-                             extracts_title_from_tree=Selector('ul.wfp-header-titles li:nth-of-type(1)'),
-                             extracts_name_from_tree=Selector('div.wfp-header h1'),
-                             extracts_cv_url_from_tree=HrefSelector('wfp-header-research a', 'CV'),
-                             extracts_personal_url_from_tree=HrefSelector('wfp-header-research a', 'Personal Website'),
-                             extracts_google_scholar_url_from_tree=HrefSelector('wfp-header-research a',
+                             extracts_faculty_urls=get_faculty_urls,
+                             extracts_title=Selector('ul.wfp-header-titles li:nth-of-type(1)'),
+                             extracts_name=Selector('div.wfp-header h1'),
+                             extracts_cv_url=HrefSelector('wfp-header-research a', 'CV'),
+                             extracts_personal_url=HrefSelector('wfp-header-research a', 'Personal Website'),
+                             extracts_gscholar_url=HrefSelector('wfp-header-research a',
                                                                                 'Google Scholar'))
 
 if __name__ == '__main__':

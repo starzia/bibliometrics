@@ -6,8 +6,9 @@ from bs4 import BeautifulSoup
 import time
 import random
 
+
 def wait():
-    time.sleep(3 + random.uniform(0,3))
+    time.sleep(10 + random.uniform(0,3))
 
 # response header handling code adapted from http://pycurl.io/docs/latest/quickstart.html
 class HeaderExtractor():

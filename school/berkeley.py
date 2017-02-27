@@ -14,13 +14,13 @@ def get_title(tree):
 def scrape_berkeley():
     return scrape_professors(school_name='Berkeley',
                              directory_url='http://facultybio.haas.berkeley.edu/faculty-photo/',
-                             extracts_faculty_urls_from_tree=\
+                             extracts_faculty_urls=\
                 lambda tree: [a.get('href').strip() for a in css_select(tree, 'div.faculty-block p a[href]')],
-                             extracts_title_from_tree=get_title,
-                             extracts_name_from_tree=Selector('td p span strong'),
-                             extracts_cv_url_from_tree=HrefSelector('td p a', 'Curriculum Vitae'),
-                             extracts_personal_url_from_tree=HrefSelector('td p a', 'http'),
-                             extracts_google_scholar_url_from_tree=None)
+                             extracts_title=get_title,
+                             extracts_name=Selector('td p span strong'),
+                             extracts_cv_url=HrefSelector('td p a', 'Curriculum Vitae'),
+                             extracts_personal_url=HrefSelector('td p a', 'http'),
+                             extracts_gscholar_url=None)
 
 if __name__ == '__main__':
     profs = scrape_berkeley()

@@ -21,12 +21,12 @@ def get_personal_url(tree):
 def scrape_harvard():
     return scrape_professors(school_name="Harvard",
                              directory_url='http://www.hbs.edu/faculty/Pages/browse.aspx',
-                             extracts_faculty_urls_from_tree=\
+                             extracts_faculty_urls=\
       lambda tree: ['http://www.hbs.edu' + a.get('href').strip() for a in css_select(tree, 'div.faculty-item a')],
-                             extracts_title_from_tree=Selector('p.faculty-title:nth-of-type(1)'),
-                             extracts_name_from_tree=Selector('h1.author:nth-of-type(1)'),
-                             extracts_cv_url_from_tree=get_cv_url,
-                             extracts_personal_url_from_tree=get_personal_url)
+                             extracts_title=Selector('p.faculty-title:nth-of-type(1)'),
+                             extracts_name=Selector('h1.author:nth-of-type(1)'),
+                             extracts_cv_url=get_cv_url,
+                             extracts_personal_url=get_personal_url)
 
 if __name__ == '__main__':
     profs = scrape_harvard()
