@@ -1,5 +1,5 @@
 from professor_scraper \
-    import scrape_professors, strip_whitespace, title_is_tenure_track, Selector, HrefSelector, HrefListSelector
+    import scrape_professors, strip_whitespace, is_job_title, Selector, HrefSelector, HrefListSelector
 from web_util import css_select
 
 
@@ -7,7 +7,7 @@ def get_title(tree):
     # We don't know exactly where the title will be so we keep looking until we find one that matches.
     for candidate in [strip_whitespace(c.text) for c in
                       css_select(tree, 'ul#ctl00_content_titles li i') + css_select(tree, 'ul#ctl00_content_areas li')]:
-        if candidate is not None and title_is_tenure_track(candidate):
+        if candidate is not None and is_job_title(candidate):
             return candidate
     return None
 

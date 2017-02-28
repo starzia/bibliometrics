@@ -4,6 +4,12 @@ from time import sleep
 import re
 import urllib.parse
 
+
+def is_job_title(candidate):
+    lowercase = candidate.lower()
+    return "professor" in lowercase or "lecturer" in lowercase
+
+
 def title_is_tenure_track(title):
     lowercase = title.lower()
     return "professor" in lowercase and "adjunct" not in lowercase \
