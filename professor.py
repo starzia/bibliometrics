@@ -119,19 +119,35 @@ class Professor:
         except NoSuchElementException:
             self.google_scholar_url = None
 
+    # TODO: extract PDFs from google docs? https://sites.google.com/site/kbaldigacoffman/resume
     def parse_personal_website(self):
-        """Looks for links to a CV and to Google Scholar on the Professor's personal website"""
+        """Looks for links to a CV and to Google Scholar on the Professor's personal website.
+        We check for an updated CV on the personal page even if we already found one on the faculty directory."""
         if self.personal_url is not None:
-            if self.cv_url is None or self.google_scholar_url is None:
-                wait()
-                tree = get_tree(self.personal_url)
-                if self.cv_url is None:
-                    cv_url = HrefSelector('a', 'CV', 'C.V.', 'Vita')(self.personal_url, tree)
-                    if cv_url is not None:
-                        print('%s: Found CV' % self.slug())
+            wait()
+            # look for links on the main page labelled "CV" or similar
+            tree = get_tree(self.personal_url)
+            cv_url = HrefSelector('a', 'CV', 'C.V.', 'Vita', 'Resume')(self.personal_url, tree)
+            if cv_url is not None:
+                # check whether pdf link is present on the cv page, eg. see http://www.fanyinzheng.com/
+                if '.pdf' not in cv_url:
+                    tree2 = get_tree(cv_url)
+                    for maybe_pdf_url in HrefListSelector('a')(cv_url, tree2):
+                        if maybe_pdf_url is not None and 'pdf' in maybe_pdf_url:
+                            cv_url = maybe_pdf_url
+                # only replace the an existing CV link if it's a PDF
+                if self.cv_url is None or cv_url.endswith('.pdf'):
                     self.cv_url = cv_url
-                if self.google_scholar_url is None:
-                    gs_url = HrefSelector('a', 'Google Scholar')(self.personal_url, tree)
-                    if gs_url is not None:
-                        print('%s: Found Google Scholar page' % self.slug())
-                    self.google_scholar_url = gs_url
+                    print('%s: found CV %s' % (self.slug(), self.cv_url))
+            # look for links to 'scholar.google.com'
+            if self.google_scholar_url is None:
+                for a in css_select(tree, 'a'):
+                    if a.get('href') is not None and 'scholar.google.com/citations?user=' in a.get('href'):
+                        gs_url = a.get('href')
+                        print('%s: found Google Scholar page %s' % (self.slug(), self.google_scholar_url))
+                        self.google_scholar_url = gs_url
+
+if __name__ == '__main__':
+    # this is just a test case
+    p = Professor(school='Columbia', name='F. Zhang', title="Professor", personal_url='http://www.fanyinzheng.com')
+    p.parse_personal_website()
