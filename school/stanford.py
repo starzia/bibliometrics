@@ -1,5 +1,5 @@
-from professor_scraper import scrape_professors, Selector, HrefSelector, scrape_professor
-from web_util import get_tree, css_select
+from professor_scraper import scrape_professors
+from web_util import get_tree, css_select, Selector, HrefSelector
 
 
 def get_faculty_urls(directory_url, main_directory_tree):  # ignore the main directory because it's paginated with ajax

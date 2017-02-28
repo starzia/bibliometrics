@@ -5,10 +5,12 @@ from bs4 import BeautifulSoup
 
 import time
 import random
+import urllib
 
 
 def wait():
     time.sleep(10 + random.uniform(0,3))
+
 
 # response header handling code adapted from http://pycurl.io/docs/latest/quickstart.html
 class HeaderExtractor():
@@ -103,3 +105,57 @@ def print_tree(tree):
 
 def css_select(tree, css_selector):
     return tree.select(css_selector)
+
+
+def strip_whitespace(str):
+    if str is None:
+        return None
+    return re.sub(r"\s+", ' ', str).strip()
+
+
+class Selector:
+    def __init__(self, css_selector):
+        self.css_selector = css_selector
+
+    def __call__(self, tree):
+        try:
+            return strip_whitespace(css_select(tree, self.css_selector)[0].text)
+        except (IndexError, AttributeError):
+            return None
+
+
+class HrefSelector:
+    def __init__(self, css_selector, *anchor_text):
+        """anchor_text can be a list of strings or a single string."""
+        self.css_selector = css_selector
+        self.anchor_text = anchor_text
+
+    def __call__(self, current_url, tree):
+        for a in css_select(tree, self.css_selector):
+            for anchor_text_i in self.anchor_text:
+                if anchor_text_i in a.text:
+                    return urllib.parse.urljoin(current_url, a.get('href'))
+        return None
+
+
+class ListSelector:
+    def __init__(self, css_selector):
+        self.css_selector = css_selector
+
+    def __call__(self, tree):
+        try:
+            return [strip_whitespace(e.text) for e in css_select(tree, self.css_selector)]
+        except (IndexError, AttributeError):
+            return None
+
+
+class HrefListSelector:
+    def __init__(self, css_selector):
+        self.css_selector = css_selector
+
+    def __call__(self, current_url, tree):
+        try:
+            return [urllib.parse.urljoin(current_url, e.get('href').strip())
+                    for e in css_select(tree, self.css_selector)]
+        except (IndexError, AttributeError):
+            return None

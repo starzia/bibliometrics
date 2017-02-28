@@ -1,5 +1,5 @@
-from professor_scraper import scrape_professors, Selector, HrefSelector
-from web_util import css_select, wait
+from professor_scraper import scrape_professors
+from web_util import css_select, Selector, HrefSelector
 
 
 def get_faculty_urls(directory_url, tree):

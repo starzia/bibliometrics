@@ -1,6 +1,5 @@
-from professor_scraper \
-    import scrape_professors, strip_whitespace, is_job_title, Selector, HrefSelector, HrefListSelector
-from web_util import css_select
+from professor_scraper import scrape_professors, is_job_title
+from web_util import css_select, strip_whitespace, Selector, HrefSelector, HrefListSelector
 
 
 def get_title(tree):

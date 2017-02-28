@@ -11,15 +11,18 @@ from unidecode import unidecode
 from web_util import *
 from google_sheets_util import get_from_row
 
+
 def lower_alpha(str):
     """ :return: a transformation of the string including only lowercase letters and underscore"""
     return ''.join(char for char in str.lower().replace(' ', '_') if char.isalnum() or char == '_')
+
 
 def get_from_row(row, column_idx):
     """get the value from the specified column index, or return None if it's empty"""
     if (len(row) <= column_idx) or row[column_idx] == "":
         return None
     return row[column_idx]
+
 
 class Professor:
     def __init__(self, school, name, title=None, cv_url=None, graduation_year=None,
@@ -65,7 +68,7 @@ class Professor:
 
     def merge(self, other_prof):
         """add any non-None attributes from the other_prof"""
-        for attr, value in other_prof.__dict__.iteritems():
+        for attr, value in other_prof.__dict__.items():
             if value is not None and getattr(self, attr) is None:
                 setattr(self, attr, value)
 
@@ -130,3 +133,20 @@ class Professor:
             self.google_scholar_url = anchor.get_attribute('href')
         except NoSuchElementException:
             self.google_scholar_url = None
+
+    def parse_personal_website(self):
+        """Looks for links to a CV and to Google Scholar on the Professor's personal website"""
+        if self.personal_url is not None:
+            if self.cv_url is None or self.google_scholar_url is None:
+                wait()
+                tree = get_tree(self.personal_url)
+                if self.cv_url is None:
+                    cv_url = HrefSelector('a', 'CV', 'Vita')(self.personal_url, tree)
+                    if cv_url is not None:
+                        print('%s: Found CV' % self.slug())
+                    self.cv_url = cv_url
+                if self.google_scholar_url is None:
+                    gs_url = HrefSelector('a', 'Google Scholar')(self.personal_url, tree)
+                    if gs_url is not None:
+                        print('%s: Found Google Scholar page' % self.slug())
+                    self.google_scholar_url = gs_url

@@ -1,4 +1,5 @@
-from professor_scraper import scrape_professors, Selector, HrefSelector, HrefListSelector
+from professor_scraper import scrape_professors
+from web_util import Selector, HrefSelector, HrefListSelector
 
 
 # NOTE: one prof has a totally different page format that I had to manually scrape

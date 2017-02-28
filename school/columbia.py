@@ -1,4 +1,5 @@
-from professor_scraper import scrape_professors, Selector, HrefSelector, HrefListSelector
+from professor_scraper import scrape_professors
+from web_util import Selector, HrefSelector, HrefListSelector
 
 
 def scrape_columbia():

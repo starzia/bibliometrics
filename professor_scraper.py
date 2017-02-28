@@ -1,8 +1,6 @@
 from professor import Professor
-from web_util import get_tree, css_select
+from web_util import get_tree, strip_whitespace
 from time import sleep
-import re
-import urllib.parse
 
 
 def is_job_title(candidate):
@@ -16,57 +14,6 @@ def title_is_tenure_track(title):
                 and "emeritus" not in lowercase and 'emerita' not in lowercase \
                 and "clinical" not in lowercase and "visiting" not in lowercase \
                 and "research assistant" not in lowercase
-
-
-def strip_whitespace(str):
-    if str is None:
-        return None
-    return re.sub(r"\s+", ' ', str).strip()
-
-
-class Selector:
-    def __init__(self, css_selector):
-        self.css_selector = css_selector
-
-    def __call__(self, tree):
-        try:
-            return strip_whitespace(css_select(tree, self.css_selector)[0].text)
-        except (IndexError, AttributeError):
-            return None
-
-
-class HrefSelector:
-    def __init__(self, css_selector, anchor_text):
-        self.css_selector = css_selector
-        self.anchor_text = anchor_text
-
-    def __call__(self, current_url, tree):
-        for a in css_select(tree, self.css_selector):
-            if self.anchor_text in a.text:
-                return urllib.parse.urljoin(current_url, a.get('href'))
-
-
-class ListSelector:
-    def __init__(self, css_selector):
-        self.css_selector = css_selector
-
-    def __call__(self, tree):
-        try:
-            return [strip_whitespace(e.text) for e in css_select(tree, self.css_selector)]
-        except (IndexError, AttributeError):
-            return None
-
-
-class HrefListSelector:
-    def __init__(self, css_selector):
-        self.css_selector = css_selector
-
-    def __call__(self, current_url, tree):
-        try:
-            return [urllib.parse.urljoin(current_url, e.get('href').strip())
-                    for e in css_select(tree, self.css_selector)]
-        except (IndexError, AttributeError):
-            return None
 
 
 def scrape_professors(school_name, directory_url,

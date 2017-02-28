@@ -107,8 +107,8 @@ def rescrape(gs, school_scraper):
     new_profs = school_scraper()
     for p in new_profs:
         for p2 in profs:
-            if p2.slug == p.slug:
-                print("merging new data for " + p.slug)
+            if p2.slug() == p.slug():
+                print("merging new data for " + p.slug())
                 p.merge(p2)
     gs.update_profs(new_profs)
 

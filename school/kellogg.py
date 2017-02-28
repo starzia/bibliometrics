@@ -1,8 +1,8 @@
-from professor_scraper import scrape_professors, Selector, HrefSelector
-from web_util import css_select
+from professor_scraper import scrape_professors
+from web_util import css_select, Selector, HrefSelector
 
 
-def get_kellogg_faculty_urls(tree):
+def get_kellogg_faculty_urls(directory_url, tree):
     """Parse a drop-down selection."""
     urls = []
     for option in css_select(tree, 'select#plcprimarymaincontent_1_selBrowseByName option'):
