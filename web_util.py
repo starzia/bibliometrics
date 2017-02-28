@@ -64,15 +64,30 @@ def get_tree(url):
     buffer = BytesIO()
     c = pycurl.Curl()
     c.setopt(c.URL, url)
-    c.setopt(c.FOLLOWLOCATION, True) # follow redirects
+    c.setopt(c.FOLLOWLOCATION, True)  # follow redirects
     c.setopt(c.WRITEDATA, buffer)
+    timeout = 20
+    c.setopt(c.TIMEOUT, timeout)  # overall timeout
+    c.setopt(c.CONNECTTIMEOUT, timeout)
+    c.setopt(c.ACCEPTTIMEOUT_MS, timeout * 1000)
+
     c.setopt(c.HTTPHEADER, ['User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36'])
     header_extractor = HeaderExtractor()
     c.setopt(c.HEADERFUNCTION, header_extractor)
-    c.perform()
+    # retry the request if it fails
+    max_retries = 10
+    for i in range(0, max_retries):
+        try:
+            c.perform()
+            break
+        except pycurl.error as err:
+            if i < max_retries-1:
+                print('WARNING: retrying %s after getting [%s] for %s' % (url, err))
+            else:
+                raise RuntimeError('Could not download '+url)
 
     if c.getinfo(pycurl.HTTP_CODE) != 200:
-        print('WARNING got status code ' + c.getinfo(pycurl.HTTP_CODE))
+        print('WARNING got status code %d' % c.getinfo(pycurl.HTTP_CODE))
     c.close()
 
     encoding = header_extractor.get_encoding()

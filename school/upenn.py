@@ -1,8 +1,8 @@
 from professor_scraper import scrape_professors, Selector, HrefSelector
-from web_util import css_select
+from web_util import css_select, wait
 
 
-def get_faculty_urls(tree):
+def get_faculty_urls(directory_url, tree):
     urls = []
     # find the "faculty by name" div, then look under it
     directory_div = False
@@ -29,9 +29,9 @@ def scrape_upenn():
                              extracts_faculty_urls=get_faculty_urls,
                              extracts_title=Selector('ul.wfp-header-titles li:nth-of-type(1)'),
                              extracts_name=Selector('div.wfp-header h1'),
-                             extracts_cv_url=HrefSelector('wfp-header-research a', 'CV'),
-                             extracts_personal_url=HrefSelector('wfp-header-research a', 'Personal Website'),
-                             extracts_gscholar_url=HrefSelector('wfp-header-research a', 'Google Scholar'))
+                             extracts_cv_url=HrefSelector('div.wfp-header-research a', 'CV'),
+                             extracts_personal_url=HrefSelector('div.wfp-header-research a', 'Personal Website'),
+                             extracts_gscholar_url=HrefSelector('div.wfp-header-research a', 'Google Scholar'))
 
 if __name__ == '__main__':
     profs = scrape_upenn()

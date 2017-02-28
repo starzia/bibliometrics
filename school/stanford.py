@@ -1,7 +1,8 @@
 from professor_scraper import scrape_professors, Selector, HrefSelector, scrape_professor
 from web_util import get_tree, css_select
 
-def get_faculty_urls(main_directory_tree):  # ignore the main directory because it's paginated with ajax
+
+def get_faculty_urls(directory_url, main_directory_tree):  # ignore the main directory because it's paginated with ajax
     faculty_urls = []
     for dept in ['accounting', 'economics', 'finance', 'marketing', 'operations-information-technology',
                  'political-economy']:

@@ -22,7 +22,7 @@ from google_sheets import GoogleSheets
 from selenium import webdriver
 
 pp = pprint.PrettyPrinter(indent=4)
-CV_PATH = 'CVs'
+CV_PATH = 'output/CVs'
 
 
 def convert_CVs_to_text():

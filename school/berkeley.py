@@ -1,6 +1,7 @@
 from professor_scraper import scrape_professors, Selector, HrefSelector, HrefListSelector, strip_whitespace
 from web_util import css_select
 
+
 def get_title(tree):
     td = css_select(tree, 'td p')[0]
     text_nodes = td.xpath('text()')
