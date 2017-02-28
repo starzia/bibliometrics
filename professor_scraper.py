@@ -1,3 +1,4 @@
+import os
 from professor import Professor
 from web_util import get_tree, strip_whitespace
 from time import sleep
@@ -22,7 +23,8 @@ def scrape_professors(school_name, directory_url,
                       extracts_name,
                       extracts_cv_url=None,
                       extracts_personal_url=None,
-                      extracts_gscholar_url=None):
+                      extracts_gscholar_url=None,
+                      extracts_papers=None):
     """ :return: a list of Professor objects """
     profs = []
     # get the faculty index page
@@ -32,7 +34,7 @@ def scrape_professors(school_name, directory_url,
         print("scraping " + faculty_url)
         p = scrape_professor(school_name, faculty_url,
                              extracts_title, extracts_name, extracts_cv_url,
-                             extracts_personal_url, extracts_gscholar_url)
+                             extracts_personal_url, extracts_gscholar_url, extracts_papers)
         if p is not None:
             print(p)
             profs.append(p)
@@ -45,7 +47,8 @@ def scrape_professor(school_name,
                      extracts_name,
                      extracts_cv_url,
                      extracts_personal_url,
-                     extracts_gscholar_url):
+                     extracts_gscholar_url,
+                     extracts_papers):
     """ :return: a Professor object or None if it's not a tenure track faculty """
     tree = get_tree(faculty_url)
     if tree is None:
@@ -60,5 +63,24 @@ def scrape_professor(school_name,
     cv_link = None if extracts_cv_url is None else extracts_cv_url(faculty_url, tree)
     personal_url = None if extracts_personal_url is None else extracts_personal_url(faculty_url, tree)
     google_scholar_url = None if extracts_gscholar_url is None else extracts_gscholar_url(faculty_url, tree)
-    return Professor(name=name, title=job_title, cv_url=cv_link, school=school_name,
+    prof = Professor(name=name, title=job_title, cv_url=cv_link, school=school_name,
                      faculty_directory_url=faculty_url, personal_url=personal_url, google_scholar_url=google_scholar_url)
+    if extracts_papers is not None:
+        prof.paper_list_url, papers = extracts_papers(faculty_url, tree)
+        # save paper list to disk
+        if prof.paper_list_url is not None and papers is not None:
+            save_paper_list(prof, papers)
+    return prof
+
+
+PAPER_LIST_PATH = 'output/papers'
+
+
+def save_paper_list(prof, paper_list):
+    global PAPER_LIST_PATH
+    if not os.path.exists(PAPER_LIST_PATH):
+        os.makedirs(PAPER_LIST_PATH)
+
+    with open(PAPER_LIST_PATH + '/' + prof.slug() + ".txt", 'w') as f:
+        for paper in paper_list:
+            f.write(paper + '\n')

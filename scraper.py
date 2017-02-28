@@ -3,6 +3,8 @@
 the main script
 """
 
+import os
+import requests
 import pprint
 import subprocess
 from professor import *
@@ -23,6 +25,22 @@ from selenium import webdriver
 
 pp = pprint.PrettyPrinter(indent=4)
 CV_PATH = 'output/CVs'
+
+
+def download_cv(prof):
+    wait()
+    print("downloading CV for " + prof.slug())
+    if prof.cv_url is None:
+        print("WARNING: missing CV!")
+        return
+
+    global CV_PATH
+    if not os.path.exists(CV_PATH):
+        os.makedirs(CV_PATH)
+
+    r = requests.get(prof.cv_url)
+    with open(CV_PATH + '/' + prof.slug() + ".pdf", 'wb') as f:
+        f.write(r.content)
 
 
 def convert_CVs_to_text():
@@ -114,14 +132,16 @@ def rescrape(gs, school_scraper):
 
 
 if __name__ == '__main__':
-    google_sheets = GoogleSheets()
+    gs = GoogleSheets()
     do_reload = False
     if do_reload:
         profs = scrape_all_schools()
-        get_missing_google_scholar_pages(google_sheets)
+        get_missing_google_scholar_pages(gs)
         for p in profs:
-            p.download_cv()
+            download_cv(p)
+            p.parse_personal_website()
         convert_CVs_to_text()
-    profs = google_sheets.read_profs()
+        gs.append_profs(profs)
+    profs = gs.read_profs()
     all_CVs = load_CVs()
     print("Total of %d professors found" % len(profs))

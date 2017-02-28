@@ -84,7 +84,7 @@ def get_tree(url):
             break
         except pycurl.error as err:
             if i < max_retries-1:
-                print('WARNING: retrying %s after getting [%s] for %s' % (url, err))
+                print('WARNING: retrying %s after getting [%s]' % (url, err))
             else:
                 raise RuntimeError('Could not download '+url)
 

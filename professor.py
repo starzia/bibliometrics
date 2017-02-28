@@ -1,6 +1,3 @@
-import os
-import urllib
-import requests
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions
@@ -27,7 +24,7 @@ def get_from_row(row, column_idx):
 class Professor:
     def __init__(self, school, name, title=None, cv_url=None, graduation_year=None,
                  google_scholar_url=None, graduation_school=None, alt_name=None,
-                 faculty_directory_url=None, personal_url=None):
+                 faculty_directory_url=None, personal_url=None, paper_list_url=None):
         self.school = school
         self.name = name
         self.title = title
@@ -38,6 +35,7 @@ class Professor:
         self.google_scholar_url = google_scholar_url
         self.alt_name = alt_name
         self.faculty_directory_url = faculty_directory_url
+        self.paper_list_url = paper_list_url
 
     def spreadsheet_row(self):
         return [self.slug(),
@@ -51,7 +49,8 @@ class Professor:
                 self.google_scholar_url,
                 self.alt_name,
                 self.graduation_school,
-                self.faculty_directory_url]
+                self.faculty_directory_url,
+                self.paper_list_url]
 
     @classmethod
     def from_spreadsheet_row(cls, row):
@@ -64,7 +63,8 @@ class Professor:
                          google_scholar_url=get_from_row(row, 8),
                          alt_name=get_from_row(row, 9),
                          graduation_school=get_from_row(row, 10),
-                         faculty_directory_url=get_from_row(row, 11))
+                         faculty_directory_url=get_from_row(row, 11),
+                         paper_list_url=get_from_row(row, 12))
 
     def merge(self, other_prof):
         """add any non-None attributes from the other_prof"""
@@ -84,21 +84,6 @@ class Professor:
         """:return: "firstname lastname" and also removed any character diacritics (accents)."""
         parts = self.name.split(' ')
         return unidecode("%s %s" % (parts[0], parts[-1]))
-
-    def download_cv(self):
-        wait()
-        print("downloading CV for " + self.slug())
-        if self.cv_url is None:
-            print("WARNING: missing CV!")
-            return
-
-        global CV_PATH
-        if not os.path.exists(CV_PATH):
-            os.makedirs(CV_PATH)
-
-        r = requests.get(self.cv_url)
-        with open(CV_PATH + '/' + self.slug() + ".pdf", 'wb') as f:
-            f.write(r.content)
 
     def find_google_scholar_page(self, selenium_driver):
         """NOTE: google is very proactive about blocking requests if it thinks you are a bot,
@@ -141,7 +126,7 @@ class Professor:
                 wait()
                 tree = get_tree(self.personal_url)
                 if self.cv_url is None:
-                    cv_url = HrefSelector('a', 'CV', 'Vita')(self.personal_url, tree)
+                    cv_url = HrefSelector('a', 'CV', 'C.V.', 'Vita')(self.personal_url, tree)
                     if cv_url is not None:
                         print('%s: Found CV' % self.slug())
                     self.cv_url = cv_url
