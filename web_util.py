@@ -154,8 +154,8 @@ class HrefListSelector:
         self.css_selector = css_selector
 
     def __call__(self, current_url, tree):
-        try:
-            return [urllib.parse.urljoin(current_url, e.get('href').strip())
-                    for e in css_select(tree, self.css_selector)]
-        except (IndexError, AttributeError):
-            return None
+        urls = []
+        for e in css_select(tree, self.css_selector):
+            if e.get('href') is not None:
+                urls.append(urllib.parse.urljoin(current_url, e.get('href').strip()))
+        return urls
