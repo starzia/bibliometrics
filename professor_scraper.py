@@ -47,10 +47,10 @@ def scrape_professor(school_name,
                      faculty_url,
                      extracts_title,
                      extracts_name,
-                     extracts_cv_url,
-                     extracts_personal_url,
-                     extracts_gscholar_url,
-                     extracts_papers):
+                     extracts_cv_url = None,
+                     extracts_personal_url = None,
+                     extracts_gscholar_url = None,
+                     extracts_papers = None):
     """ :return: a Professor object or None if it's not a tenure track faculty """
     tree = get_tree(faculty_url)
     if tree is None:
