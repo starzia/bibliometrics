@@ -2,10 +2,13 @@ import pycurl
 from io import BytesIO
 import re
 from bs4 import BeautifulSoup
+from bs4 import Tag
+from typing import List
 
 import time
 import random
 import urllib
+import chardet
 
 
 def wait():
@@ -92,9 +95,11 @@ def get_tree(url):
         print('WARNING got status code %d' % c.getinfo(pycurl.HTTP_CODE))
     c.close()
 
-    encoding = header_extractor.get_encoding()
+    # NOTE: we check the character encoding in the HTTP headers, but we ignore that because it's often misconfigured
+    expected_encoding = header_extractor.get_encoding()
+    detected_encoding = chardet.detect(buffer.getvalue())['encoding']
 
-    html = buffer.getvalue().decode(encoding)
+    html = buffer.getvalue().decode(detected_encoding)
     buffer.close()
     return BeautifulSoup(html, 'lxml')
 
@@ -103,7 +108,7 @@ def print_tree(tree):
     print(tree.prettify())
 
 
-def css_select(tree, css_selector):
+def css_select(tree, css_selector) -> Tag:
     return tree.select(css_selector)
 
 
@@ -117,7 +122,7 @@ class Selector:
     def __init__(self, css_selector):
         self.css_selector = css_selector
 
-    def __call__(self, tree):
+    def __call__(self, tree: Tag) -> str:
         try:
             return strip_whitespace(css_select(tree, self.css_selector)[0].text)
         except (IndexError, AttributeError):
@@ -125,12 +130,12 @@ class Selector:
 
 
 class HrefSelector:
-    def __init__(self, css_selector, *anchor_text):
+    def __init__(self, css_selector: str, *anchor_text: str):
         """anchor_text can be a list of strings or a single string."""
         self.css_selector = css_selector
         self.anchor_text = anchor_text
 
-    def __call__(self, current_url, tree):
+    def __call__(self, current_url: str, tree: Tag) -> str:
         for a in css_select(tree, self.css_selector):
             for anchor_text_i in self.anchor_text:
                 if anchor_text_i in a.text:
@@ -139,10 +144,10 @@ class HrefSelector:
 
 
 class ListSelector:
-    def __init__(self, css_selector):
+    def __init__(self, css_selector: str):
         self.css_selector = css_selector
 
-    def __call__(self, tree):
+    def __call__(self, tree: Tag) -> List[str]:
         try:
             return [strip_whitespace(e.text) for e in css_select(tree, self.css_selector)]
         except (IndexError, AttributeError):
@@ -153,7 +158,7 @@ class HrefListSelector:
     def __init__(self, css_selector):
         self.css_selector = css_selector
 
-    def __call__(self, current_url, tree):
+    def __call__(self, current_url: str, tree: Tag) -> List[str]:
         urls = []
         for e in css_select(tree, self.css_selector):
             if e.get('href') is not None:

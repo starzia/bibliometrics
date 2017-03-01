@@ -2,7 +2,8 @@ import os
 from professor import Professor
 from web_util import get_tree, strip_whitespace
 from time import sleep
-
+from typing import Callable, List, Optional
+from bs4 import Tag
 
 def is_job_title(candidate):
     lowercase = candidate.lower()
@@ -17,15 +18,16 @@ def title_is_tenure_track(title):
                 and "research assistant" not in lowercase
 
 
-def scrape_professors(school_name, directory_url,
-                      extracts_faculty_urls,
-                      extracts_title,
-                      extracts_name,
-                      extracts_cv_url=None,
-                      extracts_personal_url=None,
-                      extracts_gscholar_url=None,
-                      extracts_papers=None):
-    """ :return: a list of Professor objects """
+def scrape_professors(school_name: str,
+                      directory_url: str,
+                      extracts_faculty_urls: Callable[[str, Tag], List[str]],
+                      extracts_title: Callable[[Tag], str],
+                      extracts_name: Callable[[Tag], str],
+                      extracts_cv_url: Optional[Callable[[str, Tag], str]] = None,
+                      extracts_personal_url: Optional[Callable[[str, Tag], str]] = None,
+                      extracts_gscholar_url: Optional[Callable[[str, Tag], str]] = None,
+                      extracts_papers: Optional[Callable[[str, Tag], List[str]]] = None) -> List[Professor]:
+    """ As a side-effect, this function also writes the lists of publications to disk."""
     profs = []
     # get the faculty index page
     tree = get_tree(directory_url)
