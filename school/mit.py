@@ -11,6 +11,11 @@ def get_title(tree):
     return None
 
 
+def get_papers(url, tree):
+    # find the bulleted list for publications
+    return url, [strip_whitespace(li.text) for li in css_select(tree, 'div#tabs-1 ul li')]
+
+
 def scrape_mit():
     return scrape_professors(school_name="MIT",
                              directory_url='http://mitsloan.mit.edu/faculty-and-research/faculty-directory/',
@@ -19,7 +24,8 @@ def scrape_mit():
                              extracts_name=Selector('div.innerwrapper h3:nth-of-type(1)'),
                              extracts_cv_url=None,
                              extracts_personal_url=HrefSelector('aside.faculty-side a', 'Personal Website'),
-                             extracts_gscholar_url=HrefSelector('aside.faculty-side a', 'Google Scholar'))
+                             extracts_gscholar_url=HrefSelector('aside.faculty-side a', 'Google Scholar'),
+                             extracts_papers=get_papers)
 
 if __name__ == '__main__':
     profs = scrape_mit()
