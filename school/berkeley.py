@@ -12,7 +12,6 @@ def get_title(tag):
 
 
 def get_papers(url, tree):
-    papers = []
     # find the bulleted list for publications
     for heading in css_select(tree, '#center-col strong'):
         if 'Publications' in heading.text:
@@ -20,10 +19,9 @@ def get_papers(url, tree):
             next = heading
             while next is not None:
                 if next.name == 'ul':
-                    papers = [strip_whitespace(li.text.replace(' PDF.', '')) for li in css_select(next, 'li')]
-                    break
+                    return url, [strip_whitespace(li.text.replace(' PDF.', '')) for li in css_select(next, 'li')]
                 next = next.next_element
-    return url, papers
+    return None, None
 
 
 # eg., http://facultybio.haas.berkeley.edu/faculty-list/augenblick-ned/

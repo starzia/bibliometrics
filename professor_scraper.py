@@ -68,9 +68,10 @@ def scrape_professor(school_name,
     prof = Professor(name=name, title=job_title, cv_url=cv_link, school=school_name,
                      faculty_directory_url=faculty_url, personal_url=personal_url, google_scholar_url=google_scholar_url)
     if extracts_papers is not None:
-        prof.paper_list_url, papers = extracts_papers(faculty_url, tree)
+        paper_list_url, papers = extracts_papers(faculty_url, tree)
         # save paper list to disk
-        if prof.paper_list_url is not None and papers is not None:
+        if paper_list_url is not None and papers is not None and len(papers) > 0:
+            prof.paper_list_url = paper_list_url
             save_paper_list(prof, papers)
     return prof
 
