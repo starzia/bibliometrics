@@ -102,13 +102,16 @@ class GoogleSheets:
                                                         body=data).execute()
 
     def update_profs(self, profs):
-        """This only works if all the professors have already been saved to the spreadsheet."""
         rows = self.get_rows_for_profs(profs)
         updates = []
         i=0
         for p in profs:
-            updates.append({'range':'Professors!%d:%d' % (rows[i], rows[i]),
-                            'values':[p.spreadsheet_row()]})
+            if rows[i] is None:
+                print("WARNING: %s not found, creating a new row" % p.slug())
+                self.append_profs([p])
+            else:
+                updates.append({'range':'Professors!%d:%d' % (rows[i], rows[i]),
+                                'values':[p.spreadsheet_row()]})
             i += 1
         # batch update
         body = {

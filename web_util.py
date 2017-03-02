@@ -9,6 +9,7 @@ import time
 import random
 import urllib
 import chardet
+import json
 
 
 def wait():
@@ -65,7 +66,7 @@ class HeaderExtractor():
         return encoding
 
 
-def get_tree(url):
+def get_string(url):
     buffer = BytesIO()
     c = pycurl.Curl()
     c.setopt(c.URL, url)
@@ -99,9 +100,21 @@ def get_tree(url):
     expected_encoding = header_extractor.get_encoding()
     detected_encoding = chardet.detect(buffer.getvalue())['encoding']
 
-    html = buffer.getvalue().decode(detected_encoding)
+    string = buffer.getvalue().decode(detected_encoding)
     buffer.close()
-    return BeautifulSoup(html, 'lxml')
+    return string
+
+
+def get_tree(url):
+    return tree_from_string(get_string(url))
+
+
+def get_json(url):
+    return json.loads(get_string(url))
+
+
+def tree_from_string(string):
+    return BeautifulSoup(string, 'lxml')
 
 
 def print_tree(tree):
