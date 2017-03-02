@@ -7,7 +7,7 @@ import os
 import requests
 import pprint
 import subprocess
-import google_scholar
+from google_scholar import GoogleScholar
 from professor import *
 from school.kellogg import scrape_kellogg
 from school.harvard import scrape_harvard
@@ -22,7 +22,6 @@ from school.columbia import scrape_columbia
 
 
 from google_sheets import GoogleSheets
-from selenium import webdriver
 
 pp = pprint.PrettyPrinter(indent=4)
 CV_PATH = 'output/CVs'
@@ -77,17 +76,16 @@ def show_editorial_service(all_CVs):
 
 
 def get_missing_google_scholar_pages(google_sheets, school=None):
-    selenium_driver = webdriver.Firefox()
     profs = google_sheets.read_profs()
     random.shuffle(profs)
-    for p in profs:
-        if school is not None and p.school != school:
-            continue
-        if p.google_scholar_url is None:
-            print(p.name)
-            p.google_scholar_url = google_scholar.find_google_scholar_page(p, selenium_driver)
-            google_sheets.save_prof(p)
-    selenium_driver.close()
+    with GoogleScholar() as scholar:
+        for p in profs:
+            if school is not None and p.school != school:
+                continue
+            if p.google_scholar_url is None:
+                print(p.name)
+                p.google_scholar_url = scholar.find_google_scholar_page(p)
+                google_sheets.save_prof(p)
 
 
 def ask_for_graduation_years(google_sheets, profs):
