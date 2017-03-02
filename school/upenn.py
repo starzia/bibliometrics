@@ -34,12 +34,14 @@ def get_papers(url, tree):
         # extract from https://www.wharton.upenn.edu/faculty/binsbergen.cfm
         user_id = url.replace('.cfm', '').split('/')[-1]
     json = get_json('https://faculty.wharton.upenn.edu/wp-json/wfp/v2/publication/?author=%s&per_page=500&page=1' % user_id)
+    if 'data' not in json:
+        return None, None
     citations = []
     for paper in json['data']:
         if paper['type'] == 'wfp_pubpubpaper':  # published papers only
             # The 'citation' attribute contains an html-formatted citation. We just convert it to plain text.
             citations.append(tree_from_string(paper['citation']).get_text())
-    return citations
+    return url + '#research', citations
 
 
 def scrape_upenn():
