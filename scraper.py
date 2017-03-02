@@ -7,6 +7,7 @@ import os
 import requests
 import pprint
 import subprocess
+import google_scholar
 from professor import *
 from school.kellogg import scrape_kellogg
 from school.harvard import scrape_harvard
@@ -84,7 +85,7 @@ def get_missing_google_scholar_pages(google_sheets, school=None):
             continue
         if p.google_scholar_url is None:
             print(p.name)
-            p.find_google_scholar_page(selenium_driver)
+            p.google_scholar_url = google_scholar.find_google_scholar_page(p, selenium_driver)
             google_sheets.save_prof(p)
     selenium_driver.close()
 
