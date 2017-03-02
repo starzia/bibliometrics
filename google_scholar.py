@@ -11,9 +11,6 @@ from web_util import wait, tree_from_string, css_select, Selector
 from typing import List
 
 
-def empty_to_none(string):
-    return string if len(string) > 0 else None
-
 class Paper:
     def __init__(self, title, authors, venue, year, citation_count):
         self.title = title
@@ -21,6 +18,10 @@ class Paper:
         self.venue = venue
         self.year = year
         self.citation_count = citation_count
+
+    def __str__(self):
+        elements = [self.authors, self.title, self.venue, self.year, self.citation_count]
+        return '\t'.join(elements)
 
 
 class GoogleScholar:
@@ -93,10 +94,10 @@ class GoogleScholar:
         for row in css_select(tree, 'tr.gsc_a_tr'):
             title = Selector('td.gsc_a_t a')(row)
             authors_and_venue = css_select(row, 'div.gs_gray')
-            author = empty_to_none(authors_and_venue[0].text)
-            venue = empty_to_none(authors_and_venue[1].text)
-            year = empty_to_none(Selector('td.gsc_a_y')(row))
-            citation_count = empty_to_none(Selector('td.gsc_a_c a.gsc_a_ac')(row))
+            author = authors_and_venue[0].text
+            venue = authors_and_venue[1].text
+            year = Selector('td.gsc_a_y')(row)
+            citation_count = Selector('td.gsc_a_c a.gsc_a_ac')(row)
             # look for strikeout (cross-out) over citation count, indicating that it's a dupe
             if Selector('td.gsc_a_c a.gsc_a_acm')(row):
                 continue

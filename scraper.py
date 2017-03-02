@@ -19,6 +19,7 @@ from school.berkeley import scrape_berkeley
 from school.dartmouth import scrape_dartmouth
 from school.yale import scrape_yale
 from school.columbia import scrape_columbia
+from professor_scraper import save_scholar_list
 
 
 from google_sheets import GoogleSheets
@@ -86,6 +87,18 @@ def get_missing_google_scholar_pages(google_sheets, school=None):
                 print(p.name)
                 p.google_scholar_url = scholar.find_google_scholar_page(p)
                 google_sheets.save_prof(p)
+
+
+def download_google_scholar_bibiographies(google_sheets, school=None):
+    professors = google_sheets.read_profs()
+    random.shuffle(professors)
+    with GoogleScholar() as scholar:
+        for p in professors:
+            if school is not None and p.school != school:
+                continue
+            if p.google_scholar_url:
+                print(p.slug())
+                save_scholar_list(p, scholar.scrape_papers(p.google_scholar_url))
 
 
 def ask_for_graduation_years(google_sheets, profs):
