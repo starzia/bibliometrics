@@ -9,6 +9,8 @@ import pprint
 import subprocess
 from google_scholar import GoogleScholar
 from professor import *
+from professor_scraper import save_paper_list
+
 from school.kellogg import scrape_kellogg
 from school.harvard import scrape_harvard
 from school.uchicago import scrape_uchicago
@@ -19,7 +21,6 @@ from school.berkeley import scrape_berkeley
 from school.dartmouth import scrape_dartmouth
 from school.yale import scrape_yale
 from school.columbia import scrape_columbia
-from professor_scraper import save_scholar_list
 
 
 from google_sheets import GoogleSheets
@@ -97,7 +98,7 @@ def download_google_scholar_bibliographies(google_sheets, school=None):
                 continue
             if p.google_scholar_url:
                 print(p.slug())
-                save_scholar_list(p, scholar.scrape_papers(p.google_scholar_url))
+                save_paper_list('scholar_profile', p, scholar.scrape_papers(p.google_scholar_url))
 
 
 def ask_for_graduation_years(google_sheets, profs):

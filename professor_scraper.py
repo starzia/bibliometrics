@@ -72,31 +72,15 @@ def scrape_professor(school_name,
         # save paper list to disk
         if paper_list_url and papers and len(papers) > 0:
             prof.paper_list_url = paper_list_url
-            save_paper_list(prof, papers)
+            save_paper_list('paper_list', prof, papers)
     return prof
 
 
-PAPER_LIST_PATH = 'output/paper_list'
+def save_paper_list(folder, prof, paper_list):
+    path = 'output/' + folder
+    if not os.path.exists(path):
+        os.makedirs(path)
 
-
-def save_paper_list(prof, paper_list):
-    global PAPER_LIST_PATH
-    if not os.path.exists(PAPER_LIST_PATH):
-        os.makedirs(PAPER_LIST_PATH)
-
-    with open(PAPER_LIST_PATH + '/' + prof.slug() + ".txt", 'w') as f:
-        for paper in paper_list:
-            f.write(paper + '\n')
-
-
-SCHOLAR_PAPER_LIST_PATH = 'output/scholar_list'
-
-
-def save_scholar_list(prof, paper_list):
-    global SCHOLAR_PAPER_LIST_PATH
-    if not os.path.exists(SCHOLAR_PAPER_LIST_PATH):
-        os.makedirs(SCHOLAR_PAPER_LIST_PATH)
-
-    with open(SCHOLAR_PAPER_LIST_PATH + '/' + prof.slug() + ".txt", 'w') as f:
+    with open(path + '/' + prof.slug() + ".txt", 'w') as f:
         for paper in paper_list:
             f.write(str(paper) + '\n')

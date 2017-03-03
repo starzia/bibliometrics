@@ -7,7 +7,7 @@ from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.common.by import By
 from selenium import webdriver
 
-from web_util import wait, tree_from_string, css_select, Selector
+from web_util import wait, tree_from_string, css_select, Selector, HrefSelector, get_tree
 from typing import List
 
 
@@ -58,14 +58,12 @@ class GoogleScholar:
             time.sleep(1)
 
     def find_google_scholar_page(self, prof: Professor):
-        """NOTE: google is very proactive about blocking requests if it thinks you are a bot,
-        so this sometimes results in a 503 error. """
         wait()
         # get search results page
         self.selenium_driver.get('https://scholar.google.com/scholar?q=author%%3A"%s"+%s' %
                                  (urllib.parse.quote(prof.simple_name()), prof.school))
         self.wait_for_captchas()
-        # scrape the results
+        # look for a matching user profile
         try:
             anchor = self.selenium_driver.find_element_by_css_selector('h4.gs_rt2 a')
             return anchor.get_attribute('href')
@@ -74,6 +72,7 @@ class GoogleScholar:
 
     # eg., see https://scholar.google.com/citations?user=VGoSakQAAAAJ&hl=en&oi=ao
     def scrape_papers(self, author_url) -> List[Paper]:
+        wait()
         self.selenium_driver.get(author_url)
         self.wait_for_captchas()
         # click "show more" button until it disappears
@@ -104,6 +103,49 @@ class GoogleScholar:
             papers.append(Paper(title, author, venue, year, citation_count))
         return papers
 
+    def download_search_results(self, prof: Professor):
+        wait()
+        # get search results page
+        self.selenium_driver.get('https://scholar.google.com/scholar?q="%s"' % (urllib.parse.quote(prof.simple_name())))
+        self.wait_for_captchas()
+        # parse each page of results
+        while True:
+            next_link = self.selenium_driver.find_element_by_css_selector(TODO)
+            # We get the GS and WoS citation counts from the search results page
+            # We get the full citation information by virtually clicking the "cite" link for each article
+            row_info = []
+            tree = tree_from_string(self.selenium_driver.page_source)
+            for row in css_select(tree, 'div.gs_r div.gs_ri'):
+                scholar_citations = None
+                wos_citations = None
+                citation_id = None
+                for link in css_select(row, 'div.gs_fl a'):
+                    if 'Cited by' in link.text:
+                        scholar_citations = link.text.split(' ')[-1]
+                    elif 'Web of Science:' in link.text:
+                        wos_citations = link.text.split(': ')[-1]
+                    elif 'return gs_ocit' in link.get('onclick'):
+                        citation_id = link.get('onclick').split("'")[1]
+                row_info.append({'scholar_citations':scholar_citations,
+                                 'wos_citations':wos_citations,
+                                 'citation_id':citation_id})
+
+            # fetch each citation and pick out the Chicago format because it has full firstnames
+            for row in row_info:
+                wait()
+                self.selenium_driver.get('https://scholar.google.com/scholar?q=info:%s:scholar.google.com/'
+                                         '&output=cite&scirp=1&hl=en' % row['citation_id'])
+                TODO
+
+            # fetch the next page, or break if at the end
+            if next_link:
+                wait()
+                next_link.click()
+                self.wait_for_captchas()
+            else:
+                break
+        # write results
+        TODO
 
 if __name__ == '__main__':
     # for some reason, running this in the IDE requires me to set the geckodriver path
