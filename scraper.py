@@ -89,12 +89,11 @@ def get_missing_google_scholar_pages(google_sheets, school=None):
                 google_sheets.save_prof(p)
 
 
-def download_google_scholar_bibiographies(google_sheets, school=None):
+def download_google_scholar_bibliographies(google_sheets, school=None):
     professors = google_sheets.read_profs()
-    random.shuffle(professors)
     with GoogleScholar() as scholar:
         for p in professors:
-            if school is not None and p.school != school:
+            if school and p.school != school:
                 continue
             if p.google_scholar_url:
                 print(p.slug())
@@ -150,10 +149,13 @@ if __name__ == '__main__':
         profs = scrape_all_schools()
         get_missing_google_scholar_pages(gs)
         for p in profs:
-            download_cv(p)
+            # look for CV and Scholar links on any personal website
             p.parse_personal_website()
+            download_cv(p)
         convert_CVs_to_text()
         gs.append_profs(profs)
+        get_missing_google_scholar_pages(gs)
+        download_google_scholar_bibliographies(gs)
     profs = gs.read_profs()
     all_CVs = load_CVs()
     print("Total of %d professors found" % len(profs))
