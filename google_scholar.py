@@ -21,7 +21,7 @@ class Paper:
         self.authors = authors
         self.venue = venue
         self.year = year
-        self.scholar_citation_count = scholar_citations
+        self.scholar_citations = scholar_citations
         self.wos_citation_count = wos_citations
         self.id = id
 
