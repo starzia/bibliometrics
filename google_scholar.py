@@ -66,7 +66,10 @@ class GoogleScholar:
         # detect 403 error that refers to Terms of Service
         already_printed = False
         while True:
-            title = self.selenium_driver.find_element_by_css_selector('title').text
+            try:
+                title = self.selenium_driver.find_element_by_css_selector('title').text
+            except NoSuchElementException:
+                break
             if 'Error' not in title:
                 break
             if not already_printed:
