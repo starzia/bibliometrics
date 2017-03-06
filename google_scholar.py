@@ -70,7 +70,7 @@ class GoogleScholar:
                 title = self.selenium_driver.find_element_by_css_selector('title').text
             except NoSuchElementException:
                 break
-            if 'Error' not in title:
+            if 'Error' not in title and 'Sorry' not in title:
                 break
             if not already_printed:
                 print("WARNING: got an error page")
