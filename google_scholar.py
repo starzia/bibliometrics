@@ -128,9 +128,10 @@ class GoogleScholar:
         We only search in the past ten years (2007 and later) and only include the first 100 pages of results,
         and only papers that have at least one citation in Google Scholar (to save us some time)."""
         # parse each page of results, up to at most 1000 articles (100 pages)
-        result_row_info = []
         papers = []
+        # for each page of results
         for start in range(0, 1000, 10):
+            result_row_info = []
             # get search results page
             wait()
             self.selenium_driver.get(
