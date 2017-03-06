@@ -166,6 +166,7 @@ class GoogleScholar:
                 wait()
                 self.selenium_driver.get('https://scholar.google.com/scholar?q=info:%s:scholar.google.com/'
                                          '&output=cite&scirp=1&hl=en' % r['citation_id'])
+                self.wait_for_captchas()
                 # the third row in the table contains the Chicago-style citation
                 citation = self.selenium_driver.find_elements_by_css_selector('td')[2].text
                 try:
