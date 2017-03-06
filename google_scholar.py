@@ -22,7 +22,7 @@ class Paper:
         self.venue = venue
         self.year = year
         self.scholar_citations = scholar_citations
-        self.wos_citation_count = wos_citations
+        self.wos_citations = wos_citations
         self.id = id
 
     def __str__(self):
