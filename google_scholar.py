@@ -12,8 +12,23 @@ from web_util import wait, tree_from_string, css_select, Selector
 from typing import List
 
 
+STARTING_YEAR = '2007'
+
+
 def none_to_empty(obj):
     return obj if obj else ''
+
+
+def empty_to_none(str):
+    return str if len(str) > 0 else None
+
+
+def get_from_array(arr, idx):
+    if idx >= len(arr):
+        return None
+    else:
+        return empty_to_none(arr[idx])
+
 
 class Paper:
     def __init__(self, title, authors, venue, year, scholar_citations, wos_citations=None, id=None):
@@ -29,6 +44,19 @@ class Paper:
         return '\t'.join([self.authors, self.title, self.venue, self.year, self.scholar_citations,
                           none_to_empty(self.wos_citations), none_to_empty(self.id)])
 
+    def pretty_citation(self):
+        return '. '.join([self.authors, self.title, self.venue, self.year])
+
+    @classmethod
+    def from_string(cls, string):
+        s = string.split('\t')
+        return Paper(authors = s[0],
+                     title = s[1],
+                     venue = s[2],
+                     year = s[3],
+                     scholar_citations = get_from_array(s, 4),
+                     wos_citations = get_from_array(s, 5),
+                     id = get_from_array(s, 6))
 
 class GoogleScholar:
     def __init__(self, executable_path=None):
@@ -54,7 +82,6 @@ class GoogleScholar:
             # wait until CAPTCHA is gone
             WebDriverWait(self.selenium_driver, 99999).until(
                 expected_conditions.invisibility_of_element_located((By.ID, "gs_captcha_ccl")))
-            self.wait_for_captchas()
 
         # detect the IP-based Captcha that redirects you to ipv4.google.com/sorry/index and is more old-school looking
         already_failed = False
@@ -140,8 +167,8 @@ class GoogleScholar:
             # get search results page
             wait()
             self.selenium_driver.get(
-                'https://scholar.google.com/scholar?start=%d&as_ylo=2007&q=author%%3A"%s"+%s' %
-                (start, urllib.parse.quote(prof.simple_name()), prof.school))
+                'https://scholar.google.com/scholar?start=%d&as_ylo=%s&q=author%%3A"%s"+%s' %
+                (start, STARTING_YEAR, urllib.parse.quote(prof.simple_name()), prof.school))
             self.wait_for_captchas()
 
             # We get the GS and WoS citation counts from the search results page

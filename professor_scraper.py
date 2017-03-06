@@ -2,8 +2,9 @@ import os
 from professor import Professor
 from web_util import get_tree, strip_whitespace
 from time import sleep
-from typing import Callable, List, Optional
+from typing import Callable, List, Optional, AnyStr
 from bs4 import Tag
+
 
 def is_job_title(candidate):
     lowercase = candidate.lower()
@@ -84,3 +85,12 @@ def save_paper_list(folder, prof, paper_list):
     with open(path + '/' + prof.slug() + ".txt", 'w') as f:
         for paper in paper_list:
             f.write(str(paper) + '\n')
+
+
+def load_paper_list(folder, prof) -> List[AnyStr]:
+    path = 'output/' + folder
+    try:
+        with open(path + '/' + prof.slug() + ".txt", 'r') as f:
+            return f.readlines()
+    except FileNotFoundError:
+        return []
