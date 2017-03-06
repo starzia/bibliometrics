@@ -90,7 +90,7 @@ def get_missing_google_scholar_pages(google_sheets, school=None):
                 google_sheets.save_prof(p)
 
 
-def download_google_scholar_bibliographies(google_sheets, school=None):
+def download_scholar_profiles(google_sheets, school=None):
     professors = google_sheets.read_profs()
     with GoogleScholar() as scholar:
         for p in professors:
@@ -98,7 +98,18 @@ def download_google_scholar_bibliographies(google_sheets, school=None):
                 continue
             if p.google_scholar_url:
                 print(p.slug())
-                save_paper_list('scholar_profile', p, scholar.scrape_papers(p.google_scholar_url))
+                save_paper_list('scholar_profile', p, scholar.scrape_profile(p.google_scholar_url))
+
+
+def download_scholar_search_results(google_sheets, school=None):
+    professors = google_sheets.read_profs()
+    with GoogleScholar() as scholar:
+        for p in professors:
+            if school and p.school != school:
+                continue
+            print(p.slug())
+            if not p.google_scholar_url:
+                save_paper_list('scholar_search', p, scholar.scrape_search_results(p))
 
 
 def ask_for_graduation_years(google_sheets, profs):
@@ -156,7 +167,8 @@ if __name__ == '__main__':
         convert_CVs_to_text()
         gs.append_profs(profs)
         get_missing_google_scholar_pages(gs)
-        download_google_scholar_bibliographies(gs)
+        download_scholar_profiles(gs)
+        download_scholar_search_results(gs)
     profs = gs.read_profs()
     all_CVs = load_CVs()
     print("Total of %d professors found" % len(profs))

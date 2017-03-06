@@ -1,5 +1,6 @@
 import urllib
 import time
+import re
 from professor import Professor
 from selenium.common.exceptions import NoSuchElementException, ElementNotVisibleException, InvalidElementStateException
 from selenium.webdriver.support.ui import WebDriverWait
@@ -7,21 +8,26 @@ from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.common.by import By
 from selenium import webdriver
 
-from web_util import wait, tree_from_string, css_select, Selector, HrefSelector, get_tree
+from web_util import wait, tree_from_string, css_select, Selector
 from typing import List
 
 
+def none_to_empty(obj):
+    return obj if obj else ''
+
 class Paper:
-    def __init__(self, title, authors, venue, year, citation_count):
+    def __init__(self, title, authors, venue, year, scholar_citations, wos_citations=None, id=None):
         self.title = title
         self.authors = authors
         self.venue = venue
         self.year = year
-        self.citation_count = citation_count
+        self.scholar_citation_count = scholar_citations
+        self.wos_citation_count = wos_citations
+        self.id = id
 
     def __str__(self):
-        elements = [self.authors, self.title, self.venue, self.year, self.citation_count]
-        return '\t'.join(elements)
+        return '\t'.join([self.authors, self.title, self.venue, self.year, self.scholar_citations,
+                          none_to_empty(self.wos_citations), none_to_empty(self.id)])
 
 
 class GoogleScholar:
@@ -71,7 +77,7 @@ class GoogleScholar:
             return None
 
     # eg., see https://scholar.google.com/citations?user=VGoSakQAAAAJ&hl=en&oi=ao
-    def scrape_papers(self, author_url) -> List[Paper]:
+    def scrape_profile(self, author_url) -> List[Paper]:
         wait()
         self.selenium_driver.get(author_url)
         self.wait_for_captchas()
@@ -103,17 +109,21 @@ class GoogleScholar:
             papers.append(Paper(title, author, venue, year, citation_count))
         return papers
 
-    def download_search_results(self, prof: Professor):
-        wait()
-        # get search results page
-        self.selenium_driver.get('https://scholar.google.com/scholar?q="%s"' % (urllib.parse.quote(prof.simple_name())))
-        self.wait_for_captchas()
-        # parse each page of results
-        while True:
-            next_link = self.selenium_driver.find_element_by_css_selector(TODO)
+    def scrape_search_results(self, prof: Professor) -> List[Paper]:
+        """In this case, we are saving all articles, even if we are not sure that they match the author."""
+        # parse each page of results, up to at most 1000 articles (100 pages)
+        result_row_info = []
+        papers = []
+        for start in range(0, 1000, 10):
+            # get search results page
+            wait()
+            self.selenium_driver.get(
+                'https://scholar.google.com/scholar?start=%d&q=author%%3A"%s"+%s' %
+                (start, urllib.parse.quote(prof.simple_name()), prof.school))
+            self.wait_for_captchas()
+
             # We get the GS and WoS citation counts from the search results page
             # We get the full citation information by virtually clicking the "cite" link for each article
-            row_info = []
             tree = tree_from_string(self.selenium_driver.page_source)
             for row in css_select(tree, 'div.gs_r div.gs_ri'):
                 scholar_citations = None
@@ -124,31 +134,46 @@ class GoogleScholar:
                         scholar_citations = link.text.split(' ')[-1]
                     elif 'Web of Science:' in link.text:
                         wos_citations = link.text.split(': ')[-1]
-                    elif 'return gs_ocit' in link.get('onclick'):
+                    elif link.get('onclick') and 'return gs_ocit' in link.get('onclick'):
                         citation_id = link.get('onclick').split("'")[1]
-                row_info.append({'scholar_citations':scholar_citations,
-                                 'wos_citations':wos_citations,
-                                 'citation_id':citation_id})
+                result_row_info.append({'scholar_citations':scholar_citations,
+                                     'wos_citations':wos_citations,
+                                     'citation_id':citation_id})
+            # stop when we've gone past the end of results
+            if len(result_row_info) == 0:
+                break
 
             # fetch each citation and pick out the Chicago format because it has full firstnames
-            for row in row_info:
+            # and includes all the author names (or at least more of them before using "et al."
+            # eg., https://scholar.google.com/scholar?q=info:J2Uvx00ui50J:scholar.google.com/&output=cite&scirp=1&hl=en
+            for r in result_row_info:
                 wait()
                 self.selenium_driver.get('https://scholar.google.com/scholar?q=info:%s:scholar.google.com/'
-                                         '&output=cite&scirp=1&hl=en' % row['citation_id'])
-                TODO
-
-            # fetch the next page, or break if at the end
-            if next_link:
-                wait()
-                next_link.click()
-                self.wait_for_captchas()
-            else:
-                break
-        # write results
-        TODO
+                                         '&output=cite&scirp=1&hl=en' % r['citation_id'])
+                # the third row in the table contains the Chicago-style citation
+                citation = self.selenium_driver.find_elements_by_css_selector('td')[2].text
+                try:
+                    # first, look for the year inside parens
+                    year = re.findall(r"\(([12][0-9]{3})\)", citation)[0]
+                except IndexError:
+                    # if no year exists inside parens, then take the last number that looks like a year
+                    year = re.findall(r"[12][0-9]{3}", citation)[-1]
+                # look for the first period that is not part of a middle initial
+                authors = citation[:re.search(r"\w{2}\. ", citation).end()]
+                venue = self.selenium_driver.find_elements_by_css_selector('td')[2]\
+                                            .find_element_by_css_selector('i').text
+                match = re.findall(r"\"(.*)\"", citation)  # article titles are inside quotes
+                if len(match) == 0:
+                    # this is a book, which we don't record
+                    continue
+                title = match[0]
+                papers.append(Paper(title=title, authors=authors, venue=venue, year=year,
+                                    scholar_citations=r['scholar_citations'],
+                                    wos_citations=r['wos_citations'], id=r['citation_id']))
+        return papers
 
 if __name__ == '__main__':
     # for some reason, running this in the IDE requires me to set the geckodriver path
     with GoogleScholar('/usr/local/bin/geckodriver') as scholar:
-        res = scholar.scrape_papers('https://scholar.google.com/citations?user=VGoSakQAAAAJ&hl=en&oi=ao')
-        wait()
+        #res = scholar.scrape_scholar_profile('https://scholar.google.com/citations?user=VGoSakQAAAAJ&hl=en&oi=ao')
+        print(scholar.scrape_search_results(Professor(school='Northwestern', name='Nabil Al-Najjar')))
