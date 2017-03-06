@@ -54,17 +54,20 @@ class GoogleScholar:
             # wait until CAPTCHA is gone
             WebDriverWait(self.selenium_driver, 99999).until(
                 expected_conditions.invisibility_of_element_located((By.ID, "gs_captcha_ccl")))
+            self.wait_for_captchas()
 
         # detect the IP-based Captcha that redirects you to ipv4.google.com/sorry/index and is more old-school looking
-        already_printed = False
+        already_failed = False
         while 'google.com/sorry' in self.selenium_driver.current_url:
-            if not already_printed:
+            if not already_failed:
                 print("WARNING: got a form CAPTCHA")
-                already_printed = True
+                already_failed = True
             time.sleep(1)
+        if already_failed:
+            self.wait_for_captchas()
 
         # detect 403 error that refers to Terms of Service
-        already_printed = False
+        already_failed = False
         while True:
             try:
                 title = self.selenium_driver.find_element_by_css_selector('title').text
@@ -72,10 +75,12 @@ class GoogleScholar:
                 break
             if 'Error' not in title and 'Sorry' not in title:
                 break
-            if not already_printed:
+            if not already_failed:
                 print("WARNING: got an error page")
-                already_printed = True
+                already_failed = True
             time.sleep(1)
+        if already_failed:
+            self.wait_for_captchas()
 
     def find_google_scholar_page(self, prof: Professor):
         wait()
