@@ -171,8 +171,12 @@ class GoogleScholar:
                     year = re.findall(r"[12][0-9]{3}", citation)[-1]
                 # look for the first period that is not part of a middle initial
                 authors = citation[:re.search(r"\w{2}\. ", citation).end()]
-                venue = self.selenium_driver.find_elements_by_css_selector('td')[2]\
-                                            .find_element_by_css_selector('i').text
+                try:
+                    venue = self.selenium_driver.find_elements_by_css_selector('td')[2]\
+                                                .find_element_by_css_selector('i').text
+                except NoSuchElementException:
+                    # this is probably a working paper
+                    continue
                 match = re.findall(r"\"(.*)\"", citation)  # article titles are inside quotes
                 if len(match) == 0:
                     # this is a book, which we don't record
