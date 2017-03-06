@@ -42,7 +42,7 @@ class GoogleScholar:
         self.selenium_driver.quit()
 
     def wait_for_captchas(self):
-        """Sleep if a captcha is shown, otherwise return immediately."""
+        """Sleep if a captcha or error page is shown, otherwise return immediately."""
 
         # detect the javascript Captcha that is embedded in the search results page
         try:
@@ -60,6 +60,17 @@ class GoogleScholar:
         while 'google.com/sorry' in self.selenium_driver.current_url:
             if not already_printed:
                 print("WARNING: got a form CAPTCHA")
+                already_printed = True
+            time.sleep(1)
+
+        # detect 403 error that refers to Terms of Service
+        already_printed = False
+        while True:
+            title = self.selenium_driver.find_element_by_css_selector('title').text
+            if 'Error' not in title:
+                break
+            if not already_printed:
+                print("WARNING: got an error page")
                 already_printed = True
             time.sleep(1)
 
