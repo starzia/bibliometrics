@@ -121,7 +121,9 @@ class GoogleScholar:
         return papers
 
     def scrape_search_results(self, prof: Professor) -> List[Paper]:
-        """In this case, we are saving all articles, even if we are not sure that they match the author."""
+        """In this case, we are saving all articles, even if we are not sure that they match the author.
+        We only search in the past ten years (2007 and later) and only include the first 100 pages of results,
+        and only papers that have at least one citation in Google Scholar (to save us some time)."""
         # parse each page of results, up to at most 1000 articles (100 pages)
         result_row_info = []
         papers = []
@@ -129,7 +131,7 @@ class GoogleScholar:
             # get search results page
             wait()
             self.selenium_driver.get(
-                'https://scholar.google.com/scholar?start=%d&q=author%%3A"%s"+%s' %
+                'https://scholar.google.com/scholar?start=%d&as_ylo=2007&q=author%%3A"%s"+%s' %
                 (start, urllib.parse.quote(prof.simple_name()), prof.school))
             self.wait_for_captchas()
 
@@ -147,6 +149,9 @@ class GoogleScholar:
                         wos_citations = link.text.split(': ')[-1]
                     elif link.get('onclick') and 'return gs_ocit' in link.get('onclick'):
                         citation_id = link.get('onclick').split("'")[1]
+                # ignore papers with no citations
+                if not scholar_citations:
+                    break
                 result_row_info.append({'scholar_citations':scholar_citations,
                                      'wos_citations':wos_citations,
                                      'citation_id':citation_id})
@@ -170,7 +175,12 @@ class GoogleScholar:
                     # if no year exists inside parens, then take the last number that looks like a year
                     year = re.findall(r"[12][0-9]{3}", citation)[-1]
                 # look for the first period that is not part of a middle initial
-                authors = citation[:re.search(r"\w{2}\. ", citation).end()]
+                match = re.search(r"\w{2}\. ", citation)
+                if not match:
+                    # otherwise, just take the first period as in: Al-Najjar, Nabil I. "A bayesian framework for precautionary policies." (2013).
+                    match = re.search(r"\. ", citation)
+                authors = citation[:match.end()]
+                # venue is in italics
                 try:
                     venue = self.selenium_driver.find_elements_by_css_selector('td')[2]\
                                                 .find_element_by_css_selector('i').text
