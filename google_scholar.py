@@ -109,12 +109,15 @@ class GoogleScholar:
         if already_failed:
             self.wait_for_captchas()
 
-    def find_google_scholar_page(self, prof: Professor):
+    def get_page(self, url):
         wait()
-        # get search results page
-        self.selenium_driver.get('https://scholar.google.com/scholar?q=author%%3A"%s"+%s' %
-                                 (urllib.parse.quote(prof.simple_name()), prof.school))
+        self.selenium_driver.get(url)
         self.wait_for_captchas()
+
+    def find_google_scholar_page(self, prof: Professor):
+        # get search results page
+        self.get_page('https://scholar.google.com/scholar?q=author%%3A"%s"+%s' %
+                      (urllib.parse.quote(prof.simple_name()), prof.school))
         # look for a matching user profile
         try:
             anchor = self.selenium_driver.find_element_by_css_selector('h4.gs_rt2 a')
@@ -124,9 +127,7 @@ class GoogleScholar:
 
     # eg., see https://scholar.google.com/citations?user=VGoSakQAAAAJ&hl=en&oi=ao
     def scrape_profile(self, author_url) -> List[Paper]:
-        wait()
-        self.selenium_driver.get(author_url)
-        self.wait_for_captchas()
+        self.get_page(author_url)
         # click "show more" button until it disappears
         while True:
             try:
@@ -165,11 +166,9 @@ class GoogleScholar:
         for start in range(0, 1000, 10):
             result_row_info = []
             # get search results page
-            wait()
-            self.selenium_driver.get(
+            self.get_page(
                 'https://scholar.google.com/scholar?start=%d&as_ylo=%s&q=author%%3A"%s"+%s' %
                 (start, STARTING_YEAR, urllib.parse.quote(prof.simple_name()), prof.school))
-            self.wait_for_captchas()
 
             # We get the GS and WoS citation counts from the search results page
             # We get the full citation information by virtually clicking the "cite" link for each article
@@ -188,9 +187,9 @@ class GoogleScholar:
                 # ignore papers with no citations
                 if not scholar_citations:
                     break
-                result_row_info.append({'scholar_citations':scholar_citations,
-                                     'wos_citations':wos_citations,
-                                     'citation_id':citation_id})
+                result_row_info.append({'scholar_citations': scholar_citations,
+                                        'wos_citations': wos_citations,
+                                        'citation_id': citation_id})
             # stop when we've gone past the end of results
             if len(result_row_info) == 0:
                 break
@@ -199,10 +198,8 @@ class GoogleScholar:
             # and includes all the author names (or at least more of them before using "et al."
             # eg., https://scholar.google.com/scholar?q=info:J2Uvx00ui50J:scholar.google.com/&output=cite&scirp=1&hl=en
             for r in result_row_info:
-                wait()
-                self.selenium_driver.get('https://scholar.google.com/scholar?q=info:%s:scholar.google.com/'
-                                         '&output=cite&scirp=1&hl=en' % r['citation_id'])
-                self.wait_for_captchas()
+                self.get_page('https://scholar.google.com/scholar?q=info:%s:scholar.google.com/'
+                              '&output=cite&scirp=1&hl=en' % r['citation_id'])
                 # the third row in the table contains the Chicago-style citation
                 citation = self.selenium_driver.find_elements_by_css_selector('td')[2].text
                 try:
@@ -237,5 +234,5 @@ class GoogleScholar:
 if __name__ == '__main__':
     # for some reason, running this in the IDE requires me to set the geckodriver path
     with GoogleScholar('/usr/local/bin/geckodriver') as scholar:
-        #res = scholar.scrape_scholar_profile('https://scholar.google.com/citations?user=VGoSakQAAAAJ&hl=en&oi=ao')
+        # res = scholar.scrape_scholar_profile('https://scholar.google.com/citations?user=VGoSakQAAAAJ&hl=en&oi=ao')
         print(scholar.scrape_search_results(Professor(school='Northwestern', name='Nabil Al-Najjar')))
