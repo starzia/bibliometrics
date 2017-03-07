@@ -19,7 +19,7 @@ def get_from_row(row, column_idx):
 class Professor:
     def __init__(self, school, name, title=None, cv_url=None, graduation_year=None,
                  google_scholar_url=None, graduation_school=None, alt_name=None,
-                 faculty_directory_url=None, personal_url=None, paper_list_url=None):
+                 faculty_directory_url=None, personal_url=None, paper_list_url=None, hidden=False):
         self.school = school
         self.name = name
         self.title = title
@@ -31,6 +31,7 @@ class Professor:
         self.alt_name = alt_name
         self.faculty_directory_url = faculty_directory_url
         self.paper_list_url = paper_list_url
+        self.hidden = hidden
 
     def spreadsheet_row(self):
         return [self.slug(),
@@ -40,7 +41,7 @@ class Professor:
                 self.cv_url,
                 self.graduation_year,
                 self.personal_url,
-                None,  # hidden
+                'TRUE' if self.hidden else None,
                 self.google_scholar_url,
                 self.alt_name,
                 self.graduation_school,
@@ -59,7 +60,8 @@ class Professor:
                          alt_name=get_from_row(row, 9),
                          graduation_school=get_from_row(row, 10),
                          faculty_directory_url=get_from_row(row, 11),
-                         paper_list_url=get_from_row(row, 12))
+                         paper_list_url=get_from_row(row, 12),
+                         hidden=get_from_row(row, 7) is not None)
 
     def merge(self, other_prof):
         """add any non-None attributes from the other_prof"""
