@@ -22,7 +22,8 @@ def scrape_harvard():
                              extracts_faculty_urls=HrefListSelector('div.faculty-item a'),
                              extracts_title=Selector('p.faculty-title'),
                              extracts_name=Selector('h1.author'),
-                             extracts_cv_url=HrefSelector('div.faculty-navigation div.links a', 'Curriculum Vitae'),
+                             extracts_cv_url=HrefSelector('div.faculty-navigation div.links a',
+                                                          'Curriculum Vitae', 'CV'),
                              extracts_personal_url=HrefSelector('div.faculty-navigation div.links a',
                                                                 'Personal Website', 'Home Page'),
                              extracts_papers=get_papers)

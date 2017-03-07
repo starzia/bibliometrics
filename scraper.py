@@ -30,11 +30,10 @@ CV_PATH = 'output/CVs'
 
 
 def download_cv(prof):
+    if prof.cv_url is None:
+        return
     wait()
     print("downloading CV for " + prof.slug())
-    if prof.cv_url is None:
-        print("WARNING: missing CV!")
-        return
 
     global CV_PATH
     if not os.path.exists(CV_PATH):
