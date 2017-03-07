@@ -6,7 +6,7 @@ Mac users can install Python 3 using brew.
 (Below, the 'pip' command might actually be 'pip3' on your system.)
 
     pip install --user lxml cssselect pprint selenium unidecode google-api-python-client \
-        requests pycurl bs4 chardet editdistance
+        pycurl bs4 chardet editdistance
      
     # pdfminer installs the pdf2txt.py command
     pip install pdfminer

@@ -143,7 +143,7 @@ def print_top_journal_stats(professors: List[Professor]):
         print('%s:\t%f' % (school, count*1.0/profs_per_school[school]))
 
 
-def print_results(professors):
+def print_top_journal_results(professors):
     top_papers = count_papers_in_top_journals(professors)
 
     for p, papers in top_papers.items():

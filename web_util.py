@@ -66,7 +66,7 @@ class HeaderExtractor():
         return encoding
 
 
-def get_string(url):
+def get_bytes(url) -> bytes:
     buffer = BytesIO()
     c = pycurl.Curl()
     c.setopt(c.URL, url)
@@ -98,11 +98,16 @@ def get_string(url):
 
     # NOTE: we check the character encoding in the HTTP headers, but we ignore that because it's often misconfigured
     expected_encoding = header_extractor.get_encoding()
-    detected_encoding = chardet.detect(buffer.getvalue())['encoding']
 
-    string = buffer.getvalue().decode(detected_encoding)
+    body_bytes = buffer.getvalue()
     buffer.close()
-    return string
+    return body_bytes
+
+
+def get_string(url):
+    body_bytes = get_bytes(url)
+    detected_encoding = chardet.detect(body_bytes)['encoding']
+    return body_bytes.decode(detected_encoding)
 
 
 def get_tree(url):

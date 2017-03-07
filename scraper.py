@@ -4,12 +4,12 @@ the main script
 """
 
 import os
-import requests
 import pprint
 import subprocess
 from google_scholar import GoogleScholar
 from professor import *
 from professor_scraper import save_paper_list
+from web_util import get_bytes
 
 from school.kellogg import scrape_kellogg
 from school.harvard import scrape_harvard
@@ -39,9 +39,9 @@ def download_cv(prof):
     if not os.path.exists(CV_PATH):
         os.makedirs(CV_PATH)
 
-    r = requests.get(prof.cv_url)
+    b = get_bytes(prof.cv_url)
     with open(CV_PATH + '/' + prof.slug() + ".pdf", 'wb') as f:
-        f.write(r.content)
+        f.write(b)
 
 
 def convert_CVs_to_text():
