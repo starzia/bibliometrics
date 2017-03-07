@@ -207,11 +207,16 @@ class GoogleScholar:
                     year = re.findall(r"\(([12][0-9]{3})\)", citation)[0]
                 except IndexError:
                     # if no year exists inside parens, then take the last number that looks like a year
-                    year = re.findall(r"[12][0-9]{3}", citation)[-1]
+                    try:
+                        year = re.findall(r"[12][0-9]{3}", citation)[-1]
+                    except IndexError:
+                        # if no year is present, then skip it
+                        continue
                 # look for the first period that is not part of a middle initial
                 match = re.search(r"\w{2}\. ", citation)
                 if not match:
-                    # otherwise, just take the first period as in: Al-Najjar, Nabil I. "A bayesian framework for precautionary policies." (2013).
+                    # otherwise, just take the first period as in:
+                    # Al-Najjar, Nabil I. "A bayesian framework for precautionary policies." (2013).
                     match = re.search(r"\. ", citation)
                 authors = citation[:match.end()]
                 # venue is in italics
