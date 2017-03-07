@@ -105,6 +105,11 @@ class GoogleScholar:
             if not already_failed:
                 print("WARNING: got an error page")
                 already_failed = True
+                self.selenium_driver.delete_all_cookies()
+                # navigate to a scholar results page to force scholar to show us a Captcha (rather than a simple 403)
+                url = self.selenium_driver.current_url
+                self.get_page('https://scholar.google.com/scholar?hl=en&q=author%3A%22Isaac+Newton%22')  # random page
+                self.get_page(url)
             time.sleep(1)
         if already_failed:
             self.wait_for_captchas()
