@@ -157,7 +157,7 @@ class HrefSelector:
         for a in css_select(tree, self.css_selector):
             for anchor_text_i in self.anchor_text:
                 if anchor_text_i in a.text:
-                    return urllib.parse.urljoin(current_url, a.get('href'))
+                    return urllib.parse.urljoin(current_url, a.get('href')).replace(' ', '%20')
         return None
 
 

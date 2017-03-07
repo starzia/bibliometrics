@@ -79,8 +79,17 @@ class Professor:
 
     def simple_name(self):
         """:return: "firstname lastname" and also removed any character diacritics (accents)."""
+        if self.alt_name:
+            return self.alt_name
         parts = self.name.split(' ')
-        return unidecode("%s %s" % (parts[0], parts[-1]))
+        first_name = parts[0]
+        last_name = parts[-1]
+        # deal with cases like "R. Kipp Martin"
+        if len(parts) > 2 and len(parts[1]) > 2:
+            first_name = parts[1]
+        if len(parts) > 2 and len(last_name) <= 3 and last_name[:2] == 'Jr' or last_name[:2] == 'Sr':
+            last_name = parts[-2]
+        return unidecode("%s %s" % (first_name, last_name))
 
 
     # TODO: extract PDFs from google docs? https://sites.google.com/site/kbaldigacoffman/resume

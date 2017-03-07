@@ -6,6 +6,7 @@ the main script
 import os
 import pprint
 import subprocess
+import time
 from google_scholar import GoogleScholar
 from professor import *
 from professor_scraper import save_paper_list
@@ -22,7 +23,6 @@ from school.dartmouth import scrape_dartmouth
 from school.yale import scrape_yale
 from school.columbia import scrape_columbia
 
-
 from google_sheets import GoogleSheets
 
 pp = pprint.PrettyPrinter(indent=4)
@@ -32,7 +32,7 @@ CV_PATH = 'output/CVs'
 def download_cv(prof):
     if prof.cv_url is None:
         return
-    wait()
+    time.sleep(1)
     print("downloading CV for " + prof.slug())
 
     global CV_PATH
