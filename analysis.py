@@ -116,13 +116,20 @@ def is_in_journal(contains_journal_name, journal):
 # these variables control which papers are considered
 paper_folders = ['scholar_profile', 'scholar_search']
 starting_year = STARTING_YEAR
+ignored_scholar_citation_ids = set([])
+try:
+    with open('papers_to_ignore.txt', 'r') as f:
+        ignored_scholar_citation_ids = set([l.replace('\n', '') for l in f.readlines()])
+except FileNotFoundError:
+    print("WARNING: did not find papers_to_ignore.txt")
 
 
 def load_papers(prof):
     global paper_folders, starting_year
     papers = []
     for f in paper_folders:
-        papers.extend([p for p in [Paper.from_string(s) for s in load_paper_list(f, prof)] if p.year > starting_year])
+        papers.extend([p for p in [Paper.from_string(s) for s in load_paper_list(f, prof)]
+                       if p.year > starting_year and p.id not in ignored_scholar_citation_ids])
     return papers
 
 
