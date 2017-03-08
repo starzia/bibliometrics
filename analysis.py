@@ -109,6 +109,11 @@ def load_papers(folder_name, prof):
     return [p for p in [Paper.from_string(s) for s in load_paper_list(folder_name, prof)] if p.year > STARTING_YEAR]
 
 
+def count_citations(prof):
+    return sum(int(paper.scholar_citations) for paper in
+               load_papers('scholar_profile', prof) + load_papers('scholar_search', prof))
+
+
 def count_papers_in_top_journals(professors: List[Professor]):
     # maps from professor to a list of titles
     top_papers = {}
@@ -127,7 +132,7 @@ def count_papers_in_top_journals(professors: List[Professor]):
     return top_papers
 
 
-def print_top_journal_stats(professors: List[Professor]):
+def top_journal_stats(professors: List[Professor]):
     top_papers = count_papers_in_top_journals(professors)
 
     school_count = {}
@@ -138,14 +143,7 @@ def print_top_journal_stats(professors: List[Professor]):
             profs_per_school[p.school] = 0
         school_count[p.school] += len(papers)
         profs_per_school[p.school] += 1
-    print("Total:")
-    print_sorted_dict(school_count)
-
-    normalized = {}
-    for school, count in school_count.items():
-        normalized[school] = count*1.0/profs_per_school[school]
-    print("Per professor:")
-    print_sorted_dict(normalized)
+    return school_count
 
 
 def print_top_journal_results(professors):
@@ -169,6 +167,13 @@ def h_index_for_profs(professors: List[Professor]):
     return h_index_from_citations(citation_counts)
 
 
+def citations_by_school(professors: List[Professor]):
+    school_citations= {}
+    for school in SCHOOLS:
+        school_citations[school] = sum([count_citations(p) for p in professors if p.school == school])
+    return school_citations
+
+
 def h_index_by_school(professors: List[Professor]):
     school_h_index= {}
     for school in SCHOOLS:
@@ -187,7 +192,21 @@ def h_index_from_citations(citation_counts):
 
 def print_sorted_dict(dict):
     for (k, v) in sorted(dict.items(), key=operator.itemgetter(1)):
-        print('  ', k, '\t', v)
+        key = k
+        if key == 'Northwestern':
+            key = "* Kellogg *"
+        if len(key) < 6:
+            key += '    '
+        val = ('%.2f' % v) if isinstance(v, float) else v
+        print('  ', key, '\t', val)
+
+
+def normalize(school_dict, professors):
+    normalized = {}
+    for school, val in school_dict.items():
+        profs_per_school = len([p for p in professors if p.school == school])
+        normalized[school] = val*1.0/profs_per_school
+    return normalized
 
 
 def all_analyses():
@@ -196,12 +215,20 @@ def all_analyses():
     # remove hidden profs
     profs = [p for p in profs if not p.hidden]
 
+    print('\nCitations:')
+    citations = citations_by_school(profs)
+    print_sorted_dict(citations)
+    print('Normalized:')
+    print_sorted_dict(normalize(citations, profs))
+
     print('\nSchool h10-index:')
     print_sorted_dict(h_index_by_school(profs))
 
     print('\nPublications in top journals:')
-    print_top_journal_stats(profs)
-
+    j_stats = top_journal_stats(profs)
+    print_sorted_dict(j_stats)
+    print('Normalized:')
+    print_sorted_dict(normalize(j_stats, profs))
 
 
 class Test(unittest.TestCase):
