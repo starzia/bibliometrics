@@ -23,6 +23,10 @@ def empty_to_none(str):
     return str if len(str) > 0 else None
 
 
+def parse_int(str):
+    return int(str) if str else 0
+
+
 def get_from_array(arr, idx):
     if idx >= len(arr):
         return None
@@ -49,13 +53,13 @@ class Paper:
 
     @classmethod
     def from_string(cls, string):
-        s = string.split('\t')
+        s = string.replace('\n', '').split('\t')
         return Paper(authors = s[0],
                      title = s[1],
                      venue = s[2],
                      year = s[3],
-                     scholar_citations = get_from_array(s, 4),
-                     wos_citations = get_from_array(s, 5),
+                     scholar_citations = parse_int(get_from_array(s, 4)),
+                     wos_citations = parse_int(get_from_array(s, 5)),
                      id = get_from_array(s, 6))
 
 class GoogleScholar:
