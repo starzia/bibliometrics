@@ -1,6 +1,7 @@
 import pprint
 import operator
 import unittest
+import statistics
 import string
 from professor import Professor
 from typing import List
@@ -132,18 +133,9 @@ def count_papers_in_top_journals(professors: List[Professor]):
     return top_papers
 
 
-def top_journal_stats(professors: List[Professor]):
+def top_journal_pubs_for_school(professors: List[Professor]):
     top_papers = count_papers_in_top_journals(professors)
-
-    school_count = {}
-    profs_per_school = {}
-    for p, papers in top_papers.items():
-        if p.school not in school_count:
-            school_count[p.school] = 0
-            profs_per_school[p.school] = 0
-        school_count[p.school] += len(papers)
-        profs_per_school[p.school] += 1
-    return school_count
+    return {school: [len(top_papers[p]) for p in professors if p.school == school] for school in SCHOOLS}
 
 
 def print_top_journal_results(professors):
@@ -167,11 +159,15 @@ def h_index_for_profs(professors: List[Professor]):
     return h_index_from_citations(citation_counts)
 
 
-def citations_by_school(professors: List[Professor]):
-    school_citations= {}
+def citations_for_profs_in_school(professors: List[Professor]):
+    school_citations = {}
     for school in SCHOOLS:
-        school_citations[school] = sum([count_citations(p) for p in professors if p.school == school])
+        school_citations[school] = [count_citations(p) for p in professors if p.school == school]
     return school_citations
+
+
+def school_fcn(school_dict, fcn):
+    return {school: fcn(school_dict[school]) for school in SCHOOLS}
 
 
 def h_index_by_school(professors: List[Professor]):
@@ -215,20 +211,26 @@ def all_analyses():
     # remove hidden profs
     profs = [p for p in profs if not p.hidden]
 
+    print('Looking exclusively at paper published in %s and later.' % STARTING_YEAR)
+
     print('\nCitations:')
-    citations = citations_by_school(profs)
-    print_sorted_dict(citations)
-    print('Normalized:')
-    print_sorted_dict(normalize(citations, profs))
+    citations = citations_for_profs_in_school(profs)
+    print_sorted_dict(school_fcn(citations, sum))
+    print('Mean per prof:')
+    print_sorted_dict(normalize(school_fcn(citations, sum), profs))
+    print('Median per prof:')
+    print_sorted_dict(school_fcn(citations, statistics.median))
 
     print('\nSchool h10-index:')
     print_sorted_dict(h_index_by_school(profs))
 
     print('\nPublications in top journals:')
-    j_stats = top_journal_stats(profs)
-    print_sorted_dict(j_stats)
-    print('Normalized:')
-    print_sorted_dict(normalize(j_stats, profs))
+    j_stats = top_journal_pubs_for_school(profs)
+    print_sorted_dict(school_fcn(j_stats, sum))
+    print('Mean per prof:')
+    print_sorted_dict(normalize(school_fcn(j_stats, sum), profs))
+    print('Median per prof:')
+    print_sorted_dict(school_fcn(j_stats, statistics.median))
 
 
 class Test(unittest.TestCase):
