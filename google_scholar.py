@@ -34,6 +34,19 @@ def get_from_array(arr, idx):
         return empty_to_none(arr[idx])
 
 
+def get_year(citation: str):
+    try:
+        # first, look for the year inside parens
+        return re.findall(r"\(([12][0-9]{3})\)", citation)[0]
+    except IndexError:
+        # if no year exists inside parens, then take the last number that looks like a year
+        try:
+            return re.findall(r"[12][0-9]{3}", citation)[-1]
+        except IndexError:
+            # if no year is present, then return None
+            return None
+
+
 class Paper:
     def __init__(self, title, authors, venue, year, scholar_citations, wos_citations=None, id=None):
         self.title = title
@@ -211,16 +224,9 @@ class GoogleScholar:
                               '&output=cite&scirp=1&hl=en' % r['citation_id'])
                 # the third row in the table contains the Chicago-style citation
                 citation = self.selenium_driver.find_elements_by_css_selector('td')[2].text
-                try:
-                    # first, look for the year inside parens
-                    year = re.findall(r"\(([12][0-9]{3})\)", citation)[0]
-                except IndexError:
-                    # if no year exists inside parens, then take the last number that looks like a year
-                    try:
-                        year = re.findall(r"[12][0-9]{3}", citation)[-1]
-                    except IndexError:
-                        # if no year is present, then skip it
-                        continue
+                year = get_year(citation)
+                if not year:
+                    continue
                 # look for the first period that is not part of a middle initial
                 match = re.search(r"\w{2}\. ", citation)
                 if not match:

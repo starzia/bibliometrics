@@ -6,7 +6,7 @@ import string
 from professor import Professor
 from typing import List
 from professor_scraper import load_paper_list
-from google_scholar import Paper, STARTING_YEAR
+from google_scholar import Paper, STARTING_YEAR, get_year
 from google_sheets import GoogleSheets
 
 SCHOOLS = ['Northwestern', 'Harvard', 'Chicago', 'MIT', 'Stanford', 'UPenn', 'Berkeley', 'Yale', 'Columbia']
@@ -137,7 +137,8 @@ def load_papers_including_html(prof):
         candidates.append((paper.venue, paper.pretty_citation()))
     # if there were no google scholar search results, then use the faculty directory, if available
     if len(candidates) == 0 and prof.paper_list_url:
-        candidates = [(citation, citation) for citation in load_paper_list('paper_list', prof)]
+        candidates = [(citation, citation) for citation in load_paper_list('paper_list', prof)
+                      if get_year(citation) and get_year(citation) >= starting_year]
     return candidates
 
 
@@ -256,7 +257,7 @@ def all_analyses():
     print('\nSchool h10-index:')
     print_sorted_dict(h_index_by_school(profs))
 
-    print('\nPublications in top journals:')
+    print('\nPublications in "top" journals:')
     j_stats = top_journal_pubs_for_school(profs)
     print_sorted_dict(school_fcn(j_stats, sum))
     print('Mean per prof:')
@@ -264,7 +265,7 @@ def all_analyses():
     print('Median per prof:')
     print_sorted_dict(school_fcn(j_stats, statistics.median))
 
-    print('\nPer-publication stats:')
+    print('\nPapers in each "top" journal:')
     for j in TOP_JOURNALS:
         print(' '+j)
         print_sorted_dict(pubs_for_school_in_journal(profs, j))
