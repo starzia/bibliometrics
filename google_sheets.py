@@ -78,9 +78,6 @@ class GoogleSheets:
                 if not saw_header:
                     saw_header = True
                     continue
-                # skip hidden rows
-                if get_from_row(row, 7) is not None:
-                    continue
                 profs.append(Professor.from_spreadsheet_row(row))
         return profs
 

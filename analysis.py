@@ -1,3 +1,5 @@
+import pprint
+import operator
 import unittest
 import string
 from professor import Professor
@@ -77,7 +79,7 @@ HIGH_COLLISION_TOP_JOURNALS = [
     'nature',
 ]
 
-
+pp = pprint.PrettyPrinter(indent=4)
 punctuation_remover = str.maketrans('', '', string.punctuation)
 
 
@@ -136,8 +138,14 @@ def print_top_journal_stats(professors: List[Professor]):
             profs_per_school[p.school] = 0
         school_count[p.school] += len(papers)
         profs_per_school[p.school] += 1
+    print("Total:")
+    print_sorted_dict(school_count)
+
+    normalized = {}
     for school, count in school_count.items():
-        print('%s:\t%f' % (school, count*1.0/profs_per_school[school]))
+        normalized[school] = count*1.0/profs_per_school[school]
+    print("Per professor:")
+    print_sorted_dict(normalized)
 
 
 def print_top_journal_results(professors):
@@ -161,7 +169,7 @@ def h_index_for_profs(professors: List[Professor]):
     return h_index_from_citations(citation_counts)
 
 
-def h10_index_by_school(professors: List[Professor]):
+def h_index_by_school(professors: List[Professor]):
     school_h_index= {}
     for school in SCHOOLS:
         school_h_index[school] = h_index_for_profs([p for p in professors if p.school == school])
@@ -177,14 +185,22 @@ def h_index_from_citations(citation_counts):
     return len(citation_counts)
 
 
+def print_sorted_dict(dict):
+    for (k, v) in sorted(dict.items(), key=operator.itemgetter(1)):
+        print('  ', k, '\t', v)
+
+
 def all_analyses():
     gs = GoogleSheets()
     profs = gs.read_profs()
     # remove hidden profs
     profs = [p for p in profs if not p.hidden]
 
-    print('School h10-index:')
-    print
+    print('\nSchool h10-index:')
+    print_sorted_dict(h_index_by_school(profs))
+
+    print('\nPublications in top journals:')
+    print_top_journal_stats(profs)
 
 
 
