@@ -41,10 +41,10 @@ TOP_JOURNALS = [
     'journal of political economy',
     'econometrica',
     # 2nd tier economics:
-    'journal of economic theory'
+    'journal of economic theory',
     'review of economic studies',
     'rand journal of economics',
-    'american economic review: micro',
+    'american economic journal: microeconomics',
     'american economic journal: macroeconomics',
     'journal of monetary economics',
 
@@ -53,7 +53,7 @@ TOP_JOURNALS = [
     'journal of financial economics',
 
     'journal of consumer research',
-    'journal of market research',
+    'journal of marketing research',
     'marketing science',
 
     'management science',
@@ -73,6 +73,9 @@ TOP_JOURNALS = [
     'academy of management journal',
 
     'proceedings of the national academy of sciences',
+
+    'science',
+    'nature',
 ]
 
 HIGH_COLLISION_TOP_JOURNALS = [
@@ -96,40 +99,55 @@ def abbreviate(journal_name):
 
 
 def is_a_top_journal(contains_journal_name):
-    abbreviated_name = abbreviate(contains_journal_name)
     for j in TOP_JOURNALS:
-        if abbreviate(j) in abbreviated_name:
-            return True
-    for j in HIGH_COLLISION_TOP_JOURNALS:
-        if abbreviate(j) == abbreviated_name:
+        if is_in_journal(contains_journal_name, j):
             return True
     return False
 
 
-def load_papers(folder_name, prof):
-    return [p for p in [Paper.from_string(s) for s in load_paper_list(folder_name, prof)] if p.year > STARTING_YEAR]
+def is_in_journal(contains_journal_name, journal):
+    abbreviated_name = abbreviate(contains_journal_name)
+    if journal in HIGH_COLLISION_TOP_JOURNALS:
+        return abbreviate(journal) == abbreviated_name
+    else:
+        return  abbreviate(journal) in abbreviated_name
+
+
+# these variables control which papers are considered
+paper_folders = ['scholar_profile', 'scholar_search']
+starting_year = STARTING_YEAR
+
+
+def load_papers(prof):
+    global paper_folders, starting_year
+    papers = []
+    for f in paper_folders:
+        papers.extend([p for p in [Paper.from_string(s) for s in load_paper_list(f, prof)] if p.year > starting_year])
+    return papers
 
 
 def count_citations(prof):
-    return sum(int(paper.scholar_citations) for paper in
-               load_papers('scholar_profile', prof) + load_papers('scholar_search', prof))
+    return sum(int(paper.scholar_citations) for paper in load_papers(prof))
+
+
+def load_papers_including_html(prof):
+    candidates = []  # a list of 2-tuples containing the journal title (and ideally only that) and a citation string
+    # Try google scholar results first
+    for paper in load_papers(prof):
+        candidates.append((paper.venue, paper.pretty_citation()))
+    # if there were no google scholar search results, then use the faculty directory, if available
+    if len(candidates) == 0 and prof.paper_list_url:
+        candidates = [(citation, citation) for citation in load_paper_list('paper_list', prof)]
+    return candidates
 
 
 def count_papers_in_top_journals(professors: List[Professor]):
     # maps from professor to a list of titles
     top_papers = {}
     for p in professors:
-        candidates = {}  # maps from string containing the journal title (and ideally only that) to a citation string
-        # Try google scholar results first.  A given person will have one type of results or the other, but not both.
-        for paper in load_papers('scholar_profile', p) + load_papers('scholar_search', p):
-            candidates[paper.venue] = paper.pretty_citation()
-        # if there were no google scholar search results, then use the faculty directory, if available
-        if len(candidates) == 0 and p.paper_list_url:
-            for citation in load_paper_list('paper_list', p):
-                candidates[citation]: citation
-
+        candidates = load_papers_including_html(p)
         # filter out papers in the top journals
-        top_papers[p] = [citation for journal, citation in candidates.items() if is_a_top_journal(journal)]
+        top_papers[p] = [citation for (journal, citation) in candidates if is_a_top_journal(journal)]
     return top_papers
 
 
@@ -147,14 +165,19 @@ def print_top_journal_results(professors):
             print('\t' + paper)
 
 
+def pubs_for_school_in_journal(professors, journal_name):
+    return {school: sum([sum([is_in_journal(paper[0], journal_name) for paper in load_papers_including_html(prof)])
+                         for prof in professors if prof.school == school])
+            for school in SCHOOLS}
+
+
 def h_index_for_profs(professors: List[Professor]):
     """return an h-index (integer) based on all the publications of the professors passed-in,
     just for papers in the past ten years."""
 
     citation_counts = []
     for p in professors:
-        # use google scholar profiles and google scholar search results
-        for paper in load_papers('scholar_profile', p) + load_papers('scholar_search', p):
+        for paper in load_papers(p):
             citation_counts.append(paper.scholar_citations)
     return h_index_from_citations(citation_counts)
 
@@ -187,14 +210,17 @@ def h_index_from_citations(citation_counts):
 
 
 def print_sorted_dict(dict):
-    for (k, v) in sorted(dict.items(), key=operator.itemgetter(1)):
+    lst = sorted(dict.items(), key=operator.itemgetter(1))
+    lst.reverse()
+    for (k, v) in lst:
         key = k
         if key == 'Northwestern':
-            key = "* Kellogg *"
-        if len(key) < 6:
-            key += '    '
+            key = "__Kellogg__"
+        # pad out schools names to 11 chars
+        for i in range(0, 11 - len(key)):
+            key += ' '
         val = ('%.2f' % v) if isinstance(v, float) else v
-        print('  ', key, '\t', val)
+        print('  ', key, val)
 
 
 def normalize(school_dict, professors):
@@ -211,7 +237,13 @@ def all_analyses():
     # remove hidden profs
     profs = [p for p in profs if not p.hidden]
 
-    print('Looking exclusively at paper published in %s and later.' % STARTING_YEAR)
+    global paper_folders, starting_year
+    # # just consider profs with a google scholar profile
+    # paper_folders = ['scholar_profile']
+    # profs = [p for p in profs if p.google_scholar_url]
+    # print('Only considering the %d professors with Google Scholar profiles.' % len(profs))
+
+    print('Looking exclusively at papers published in %s and later.' % starting_year)
 
     print('\nCitations:')
     citations = citations_for_profs_in_school(profs)
@@ -231,6 +263,11 @@ def all_analyses():
     print_sorted_dict(normalize(school_fcn(j_stats, sum), profs))
     print('Median per prof:')
     print_sorted_dict(school_fcn(j_stats, statistics.median))
+
+    print('\nPer-publication stats:')
+    for j in TOP_JOURNALS:
+        print(' '+j)
+        print_sorted_dict(pubs_for_school_in_journal(profs, j))
 
 
 class Test(unittest.TestCase):
