@@ -3,6 +3,8 @@ import operator
 import unittest
 import statistics
 import string
+
+import editdistance
 from professor import Professor
 from typing import List
 from professor_scraper import load_paper_list
@@ -178,16 +180,44 @@ def pubs_for_school_in_journal(professors, journal_name):
                          for prof in professors if prof.school == school])
             for school in SCHOOLS}
 
+def norm_str(string):
+    return string.lower().translate(punctuation_remover)
+
+def strings_are_similar(string1, string2):
+    difference_allowed = 0.1  # allow a 10% difference in characters
+    return editdistance.eval(norm_str(string1), norm_str(string2)) / (1.0*len(string1)) < difference_allowed
+
+
+def papers_are_same(paper1, paper2):
+    # below, sort author list to allow for reordering the names
+    return strings_are_similar(paper1.title, paper2.title) \
+           and strings_are_similar(''.join(sorted(paper1.authors)), ''.join(sorted(paper2.authors)))
+
+
+def deduplicate(paper_list) -> List[Paper]:
+    paper_list = sorted(paper_list, key=lambda paper: norm_str(paper.title))
+    unique_papers = []
+    for paper in paper_list:
+        # check back a few places for matching titles in the sorted list
+        for i in range(1,5):
+            if len(unique_papers) >= i and papers_are_same(paper, unique_papers[-i]):
+                break
+        else:
+            unique_papers.append(paper)  # executed if the loop ended normally (no break)
+    return unique_papers
+
 
 def h_index_for_profs(professors: List[Professor]):
     """return an h-index (integer) based on all the publications of the professors passed-in,
     just for papers in the past ten years."""
 
-    citation_counts = []
+    # gather and deduplicate publications
+    pubs = []
     for p in professors:
-        for paper in load_papers(p):
-            citation_counts.append(paper.scholar_citations)
-    return h_index_from_citations(citation_counts)
+        pubs.extend(load_papers(p))
+    pubs = deduplicate(pubs)
+
+    return h_index_from_citations([c.scholar_citations for c in pubs])
 
 
 def citations_for_profs_in_school(professors: List[Professor]):
@@ -293,5 +323,22 @@ class Test(unittest.TestCase):
         self.assertEqual(0, h_index_from_citations([0, 0]))
         self.assertEqual(1, h_index_from_citations([1, 1, 1]))
 
+    def test_deduplicate_papers(self):
+        self.assertEqual(1, len(deduplicate([
+            Paper(title='Why and How to Design a Contingent Convertible Debt Requirement',
+                  authors='RJ Herring, CW Calomiris', venue='', year='', scholar_citations=''),
+            Paper(title='Why and how to design a contingent convertible debt requirement',
+                  authors='CW Calomiris, RJ Herring', venue='', year='', scholar_citations='')
+        ])))
+        self.assertEqual(2, len(deduplicate([
+            Paper(title='Why and How to Design a Contingent Convertible Debt Requirement.',
+                  authors='RJ Herring, CW Calomiris', venue='', year='', scholar_citations=''),
+            Paper(title='Why and how to design a contingent convertible debt requirement',
+                  authors='CW Calomiris, RJ Herring', venue='', year='', scholar_citations=''),
+            Paper(title='Why and how to design a contingent convertible debt',
+                  authors='CW Calomiris, RJ Herring', venue='', year='', scholar_citations='')
+        ])))
+
 if __name__ == '__main__':
+    # unittest.main()
     all_analyses()

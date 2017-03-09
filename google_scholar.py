@@ -58,8 +58,11 @@ class Paper:
         self.id = id
 
     def __str__(self):
-        return '\t'.join([self.authors, self.title, self.venue, self.year, self.scholar_citations,
-                          none_to_empty(self.wos_citations), none_to_empty(self.id)])
+        return '\t'.join([self.authors, self.title, self.venue, self.year, str(self.scholar_citations),
+                          str(none_to_empty(self.wos_citations)), none_to_empty(self.id)])
+
+    def __repr__(self):
+        return str(self)
 
     def pretty_citation(self):
         return '. '.join([self.authors, self.title, self.venue, self.year])
