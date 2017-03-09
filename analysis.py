@@ -156,7 +156,7 @@ def load_papers_including_html(prof):
 
 
 def count_papers_in_top_journals(professors: List[Professor]):
-    # maps from professor to a list of titles
+    """:return dict mapping from professor to a list of titles"""
     top_papers = {}
     for p in professors:
         candidates = load_papers_including_html(p)
@@ -165,7 +165,18 @@ def count_papers_in_top_journals(professors: List[Professor]):
     return top_papers
 
 
-def top_journal_pubs_for_school(professors: List[Professor]):
+def top_journal_pubs_for(school, professors: List[Professor]):
+    candidates = []
+    for p in professors:
+        if p.school == school:
+            candidates.extend(load_papers_including_html(p))
+    candidates = deduplicate(candidates,
+                             lambda c: c[1],
+                             lambda c1, c2: strings_are_similar(c1[1], c2[1]))
+    return len([citation for (journal, citation) in candidates if is_a_top_journal(journal)])
+
+
+def top_journal_pubs_for_profs_at_school(professors: List[Professor]):
     top_papers = count_papers_in_top_journals(professors)
     return {school: [len(top_papers[p]) for p in professors if p.school == school] for school in SCHOOLS}
 
@@ -184,6 +195,7 @@ def pubs_for_school_in_journal(professors, journal_name):
                          for prof in professors if prof.school == school])
             for school in SCHOOLS}
 
+
 def norm_str(string):
     return strip_whitespace(string.lower().translate(punctuation_remover))
 
@@ -199,13 +211,15 @@ def papers_are_same(paper1, paper2):
            and strings_are_similar(''.join(sorted(paper1.authors)), ''.join(sorted(paper2.authors)))
 
 
-def deduplicate(paper_list) -> List[Paper]:
-    paper_list = sorted(paper_list, key=lambda paper: norm_str(paper.title))
+def deduplicate(paper_list,
+                sort_key=lambda paper: norm_str(paper.title),
+                equality_tester=lambda p1, p2: papers_are_same(p1, p2)) -> List:
+    paper_list = sorted(paper_list, key=sort_key)
     unique_papers = []
     for paper in paper_list:
         # check back a few places for matching titles in the sorted list
         for i in range(1,5):
-            if len(unique_papers) >= i and papers_are_same(paper, unique_papers[-i]):
+            if len(unique_papers) >= i and equality_tester(paper, unique_papers[-i]):
                 break
         else:
             unique_papers.append(paper)  # executed if the loop ended normally (no break)
@@ -216,7 +230,7 @@ def h_index_for_profs(professors: List[Professor]):
     """return an h-index (integer) based on all the publications of the professors passed-in,
     just for papers in the past ten years."""
 
-    # gather and deduplicate publications
+    # gather and deduplicate publications, so that we don't count a paper twice if it had two authors at the school
     pubs = []
     for p in professors:
         pubs.extend(load_papers(p))
@@ -300,12 +314,12 @@ def all_analyses():
     print_sorted_dict(h_index_by_school(profs))
 
     print('\nPublications in "top" journals:')
-    j_stats = top_journal_pubs_for_school(profs)
-    print_sorted_dict(school_fcn(j_stats, sum))
+    j_stats = {school: top_journal_pubs_for(school, profs) for school in SCHOOLS}
+    print_sorted_dict(j_stats)
     print('Mean per prof:')
-    print_sorted_dict(normalize(school_fcn(j_stats, sum), profs))
+    print_sorted_dict(normalize(j_stats, profs))
     print('Median per prof:')
-    print_sorted_dict(school_fcn(j_stats, statistics.median))
+    print_sorted_dict(school_fcn(top_journal_pubs_for_profs_at_school(profs), statistics.median))
 
     print('\nPapers in each "top" journal:')
     for j in TOP_JOURNALS:
