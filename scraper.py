@@ -3,11 +3,12 @@
 the main script
 """
 
+import csv
 import os
 import pprint
 import subprocess
 import time
-from google_scholar import GoogleScholar
+from google_scholar import GoogleScholar, get_year
 from professor import *
 from professor_scraper import save_paper_list
 from web_util import get_bytes
@@ -125,6 +126,38 @@ def ask_for_graduation_years(google_sheets, profs):
                 p.graduation_year = int(year_str)
                 p.graduation_school = school
                 google_sheets.save_prof(p)
+
+
+def load_mturk_results(csv_filename):
+    observed_answers = {}
+    with open(csv_filename, 'r') as csvfile:
+        for row in csv.reader(csvfile, delimiter=',', quotechar='"'):
+            name_slug = row[3].split('/')[-1].split('.')[0]
+            phd_year = get_year(row[6])
+            if not phd_year:
+                phd_year = get_year(row[5])
+            if not phd_year:
+                continue
+            if name_slug not in observed_answers:
+                observed_answers[name_slug] = []
+            observed_answers[name_slug].append(phd_year)
+    # majority vote
+    year_to_record = {}
+    for slug, answers in observed_answers.items():
+        # if an answer is in the majority, record it
+        for a in answers:
+            if answers.count(a) > len(answers) * 0.5:
+                year_to_record[slug] = answers[0]
+                continue
+    # save results
+    gs = GoogleSheets()
+    profs = gs.read_profs()
+    for p in profs:
+        if p.slug() in year_to_record:
+            p.graduation_year = year_to_record[p.slug()]
+            time.sleep(1)
+            print("%s: saving graduation year %s" % (p.slug(), p.graduation_year))
+            gs.save_prof(p)
 
 
 def scrape_all_schools():

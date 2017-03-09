@@ -294,6 +294,9 @@ def all_analyses():
     # remove hidden profs
     profs = [p for p in profs if not p.hidden]
 
+    # # just consider profs who finished their PhD within the past ten years
+    # profs = [p for p in profs if p.graduation_year and p.graduation_year >= starting_year]
+
     global paper_folders, starting_year
     # # just consider profs with a google scholar profile
     # paper_folders = ['scholar_profile']
@@ -301,6 +304,9 @@ def all_analyses():
     # print('Only considering the %d professors with Google Scholar profiles.' % len(profs))
 
     print('Looking exclusively at papers published in %s and later.' % starting_year)
+
+    print('\nProfessor count:')
+    print_sorted_dict({school:len([p for p in profs if p.school==school]) for school in SCHOOLS})
 
     print('\nCitations:')
     citations = citations_for_profs_in_school(profs)
