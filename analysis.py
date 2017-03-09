@@ -31,6 +31,9 @@ ABBREVIATIONS = {
     'proceedings': 'proc',
     'national': 'natl',
     'academy': 'ac',
+    'organization': 'org',
+    'organizational': 'org',
+    'affairs': 'aff'
 }
 
 TOP_JOURNALS = [
@@ -71,7 +74,7 @@ TOP_JOURNALS = [
     'sociological science',
 
     'administrative science quarterly',
-    'organizational science',
+    'organization science',
     'academy of management journal',
 
     'proceedings of the national academy of sciences',
