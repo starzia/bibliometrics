@@ -10,16 +10,17 @@ from typing import List
 from professor_scraper import load_paper_list
 from google_scholar import Paper, STARTING_YEAR, get_year
 from google_sheets import GoogleSheets
+from web_util import strip_whitespace
 
 SCHOOLS = ['Northwestern', 'Harvard', 'Chicago', 'MIT', 'Stanford', 'UPenn', 'Berkeley', 'Yale', 'Columbia']
 
 ABBREVIATIONS = {
     'the': None,
     'of': None,
+    'and': '&',
     'journal': 'j',
     'review': 'rev',
     'research': 'res',
-    'and': '&',
     'studies': 'stud',
     'science': 'sci',
     'psychological': 'psych',
@@ -63,7 +64,7 @@ TOP_JOURNALS = [
 
     'management science',
     'operations research',
-    'manufacturing and service operations',
+    'manufacturing and service operations management',
 
     'psychological science',
     'journal of personality and social psychology',
@@ -94,13 +95,13 @@ punctuation_remover = str.maketrans('', '', string.punctuation)
 
 def abbreviate(journal_name):
     output = []
-    for tok in journal_name.lower().translate(punctuation_remover).split(' '):
+    for tok in norm_str(journal_name).split(' '):
         if tok in ABBREVIATIONS:
             if ABBREVIATIONS[tok]:
                 output.append(ABBREVIATIONS[tok])
         else:
             output.append(tok)
-    return ' '.join(output)
+    return norm_str(' '.join(output))
 
 
 def is_a_top_journal(contains_journal_name):
@@ -115,7 +116,7 @@ def is_in_journal(contains_journal_name, journal):
     if journal in HIGH_COLLISION_TOP_JOURNALS:
         return abbreviate(journal) == abbreviated_name
     else:
-        return  abbreviate(journal) in abbreviated_name
+        return abbreviate(journal) in abbreviated_name
 
 
 # these variables control which papers are considered
@@ -184,7 +185,8 @@ def pubs_for_school_in_journal(professors, journal_name):
             for school in SCHOOLS}
 
 def norm_str(string):
-    return string.lower().translate(punctuation_remover)
+    return strip_whitespace(string.lower().translate(punctuation_remover))
+
 
 def strings_are_similar(string1, string2):
     difference_allowed = 0.1  # allow a 10% difference in characters
@@ -316,6 +318,7 @@ class Test(unittest.TestCase):
         self.assertTrue(is_a_top_journal("Econometrica"))
         self.assertTrue(is_a_top_journal("Econometrica. "))
         self.assertTrue(is_a_top_journal("Proc. Natl. Academy of Sciences"))
+        self.assertTrue(is_a_top_journal("Manufacturing and Service Operations Management"))
         self.assertFalse(is_a_top_journal('American Journal of Nature'))
 
     def test_h_index(self):
@@ -341,6 +344,14 @@ class Test(unittest.TestCase):
             Paper(title='Why and how to design a contingent convertible debt',
                   authors='CW Calomiris, RJ Herring', venue='', year='', scholar_citations='')
         ])))
+
+    def test_abbreviate(self):
+        self.assertEqual('manufacturing service operations mgmt',
+                         abbreviate('Manufacturing and Service Operations Management'))
+        self.assertTrue(is_in_journal(
+            'Bob Smith. "My great paper." Manufacturing & Service Operations Management. (2017).',
+            'manufacturing and service operations management'
+        ))
 
 if __name__ == '__main__':
     # unittest.main()

@@ -130,10 +130,13 @@ def css_select(tree, css_selector) -> Tag:
     return tree.select(css_selector)
 
 
+space_matcher = re.compile(r"\s+")
+
+
 def strip_whitespace(str):
     if str is None:
         return None
-    return re.sub(r"\s+", ' ', str).strip()
+    return space_matcher.sub(' ', str).strip()
 
 
 class Selector:
