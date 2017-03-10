@@ -5,6 +5,9 @@ import statistics
 import string
 
 import editdistance
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
+
 from professor import Professor
 from typing import List
 from professor_scraper import load_paper_list
@@ -266,18 +269,16 @@ def h_index_from_citations(citation_counts):
     return len(citation_counts)
 
 
-def print_sorted_dict(dict):
+def sort_and_print_dict(dict):
     lst = sorted(dict.items(), key=operator.itemgetter(1))
     lst.reverse()
-    for (k, v) in lst:
-        key = k
-        if key == 'Northwestern':
-            key = "__Kellogg__"
+    for (key, v) in lst:
         # pad out schools names to 11 chars
-        for i in range(0, 11 - len(key)):
+        for i in range(0, 12 - len(key)):
             key += ' '
         val = ('%.2f' % v) if isinstance(v, float) else v
         print('  ', key, val)
+    return lst
 
 
 def normalize(school_dict, professors):
@@ -286,6 +287,25 @@ def normalize(school_dict, professors):
         profs_per_school = len([p for p in professors if p.school == school])
         normalized[school] = val*1.0/profs_per_school
     return normalized
+
+
+def plot(pdf_pages, title, dict):
+    print('\n%s:' % title)
+    data = sort_and_print_dict(dict)
+    # purple bar for kellogg
+    plt.bar(range(0,len(data)),
+            [e[1] if 'Northwestern' in e[0] else 0 for e in data], color=[.29,0,.51])
+    # gray bar for other schools
+    plt.bar(range(0,len(data)),
+            [0 if 'Northwestern' in e[0] else e[1] for e in data], color=[0.8,0.8,0.8])
+    plt.xticks(range(len(data)),
+               tuple(['Kellogg' if e[0] == 'Northwestern' else e[0] for e in data]),
+               rotation=30)
+    plt.gca().set_axisbelow(True)
+    plt.gca().yaxis.grid(True)
+    plt.title(title)
+    plt.savefig(pdf_pages, format='pdf')
+    plt.close()
 
 
 def all_analyses():
@@ -305,32 +325,24 @@ def all_analyses():
 
     print('Looking exclusively at papers published in %s and later.' % starting_year)
 
-    print('\nProfessor count:')
-    print_sorted_dict({school:len([p for p in profs if p.school==school]) for school in SCHOOLS})
+    pp = PdfPages('plots.pdf')
+    plot(pp, 'Professor count', {school:len([p for p in profs if p.school==school]) for school in SCHOOLS})
 
-    print('\nCitations:')
     citations = citations_for_profs_in_school(profs)
-    print_sorted_dict(school_fcn(citations, sum))
-    print('Mean per prof:')
-    print_sorted_dict(normalize(school_fcn(citations, sum), profs))
-    print('Median per prof:')
-    print_sorted_dict(school_fcn(citations, statistics.median))
+    plot(pp, 'Citations', school_fcn(citations, sum))
+    plot(pp, 'Mean citations/prof', normalize(school_fcn(citations, sum), profs))
+    plot(pp, 'Median citations/prof', school_fcn(citations, statistics.median))
 
-    print('\nSchool h10-index:')
-    print_sorted_dict(h_index_by_school(profs))
+    plot(pp, 'School h-index', h_index_by_school(profs))
 
-    print('\nPublications in "top" journals:')
     j_stats = {school: top_journal_pubs_for(school, profs) for school in SCHOOLS}
-    print_sorted_dict(j_stats)
-    print('Mean per prof:')
-    print_sorted_dict(normalize(j_stats, profs))
-    print('Median per prof:')
-    print_sorted_dict(school_fcn(top_journal_pubs_for_profs_at_school(profs), statistics.median))
-
-    print('\nPapers in each "top" journal:')
+    plot(pp, 'Publications in "top" journals', j_stats)
+    plot(pp, 'Mean top-pubs/prof', normalize(j_stats, profs))
+    plot(pp, 'Median top-pubs/prof',
+                      school_fcn(top_journal_pubs_for_profs_at_school(profs), statistics.median))
     for j in TOP_JOURNALS:
-        print(' '+j)
-        print_sorted_dict(pubs_for_school_in_journal(profs, j))
+        plot(pp, j, pubs_for_school_in_journal(profs, j))
+    pp.close()
 
 
 class Test(unittest.TestCase):
