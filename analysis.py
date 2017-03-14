@@ -93,7 +93,7 @@ HIGH_COLLISION_TOP_JOURNALS = [
 ]
 
 pp = pprint.PrettyPrinter(indent=4)
-punctuation_remover = str.maketrans('', '', string.punctuation)
+non_letter_remover = str.maketrans('', '', string.punctuation + string.digits)
 
 
 def abbreviate(journal_name):
@@ -200,7 +200,7 @@ def pubs_for_school_in_journal(professors, journal_name):
 
 
 def norm_str(string):
-    return strip_whitespace(string.lower().translate(punctuation_remover))
+    return strip_whitespace(string.lower().translate(non_letter_remover))
 
 
 def strings_are_similar(string1, string2):
