@@ -99,6 +99,7 @@ non_letter_remover = str.maketrans('', '', string.punctuation + string.digits)
 # global plotting parameters
 plt.rcParams["font.serif"] = "Times New Roman"
 plt.rcParams["font.family"] = "serif"
+plt.rcParams['figure.figsize'] = 4, 4  # figure size in inches
 
 
 def abbreviate(journal_name):
@@ -376,7 +377,7 @@ def plot_prestigious_rate_aging(aging):
     plt.xticks([age for age, cites in enumerate(aging)],
                [age if age < 10 else '>=10' for age, cites in enumerate(aging)])
     plt.xlabel("Years since faculty's graduation")
-    plt.legend(loc=2)
+    plt.legend(loc=1)
     plt.ylabel("Career-average prestigious publications per year")
     plt.ylim([0, 1.2])
     plt.gca().set_axisbelow(True)
