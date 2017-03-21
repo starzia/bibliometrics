@@ -7,6 +7,7 @@ import string
 import editdistance
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
+import matplotlib.ticker
 
 from professor import Professor
 from typing import List, Dict, AnyStr
@@ -157,8 +158,18 @@ def citation_aging_report(profs) -> List[List[int]]:
     """:return: the number of citations for professors of "age" 0 through 10 years.  Anyone older than 10 is considered
      10 because we ignore papers older than ten years anyway."""
     return [[count_citations(p) for p in profs if p.graduation_year and
-             (2017 - int(p.graduation_year) == i if i < 10 else 2017 - int(p.graduation_year) >= i)]
-            for i in range(0, 11)]
+             (2018 - int(p.graduation_year) == i if i < 11 else 2018 - int(p.graduation_year) >= i)]
+            for i in range(1, 12)]
+
+
+def prestigious_rate_aging_report(profs) -> List[List[float]]:
+    """:return: the career-average rate of publication in prestigious journals
+       for professors of "age" 0 through 10 years.
+       Anyone older than 10 is considered 10 because we ignore papers older than ten years anyway."""
+    top_papers = papers_in_top_journals(profs)
+    return [[float(len(top_papers[p]))/i for p in profs if p.graduation_year and
+             (2018 - int(p.graduation_year) == i if i < 11 else 2018 - int(p.graduation_year) >= i)]
+            for i in range(1, 12)]
 
 
 def load_papers_including_html(prof):
@@ -316,6 +327,7 @@ def plot(pdf_pages, title, dict):
     plt.xticks(range(len(data)),
                tuple(['Kellogg' if e[0] == 'Northwestern' else e[0] for e in data]),
                rotation=30)
+    plt.gca().yaxis.set_major_locator(matplotlib.ticker.MaxNLocator(integer=True))  # only use integer y ticks
     plt.gca().set_axisbelow(True)
     plt.gca().yaxis.grid(True)
     plt.title(title)
@@ -323,7 +335,7 @@ def plot(pdf_pages, title, dict):
     plt.close()
 
 
-def plot_aging(aging):
+def plot_citation_aging(aging):
     plt.bar([age for age, cites in enumerate(aging)],
             [len(cites) for age, cites in enumerate(aging)],
             label="sample size", color=[0.8,0.8,0.8])
@@ -354,6 +366,25 @@ def plot_aging(aging):
     plt.close()
 
 
+def plot_prestigious_rate_aging(aging):
+    plt.plot([age for age, cites in enumerate(aging)],
+             [statistics.median(cites) for age, cites in enumerate(aging)],
+             label="median rate")
+    plt.plot([age for age, cites in enumerate(aging)],
+             [statistics.mean(cites) for age, cites in enumerate(aging)], '--',
+             label="mean rate")
+    plt.xticks([age for age, cites in enumerate(aging)],
+               [age if age < 10 else '>=10' for age, cites in enumerate(aging)])
+    plt.xlabel("Years since faculty's graduation")
+    plt.legend(loc=2)
+    plt.ylabel("Career-average prestigious publications per year")
+    plt.ylim([0, 1.2])
+    plt.gca().set_axisbelow(True)
+    plt.gca().yaxis.grid(True)
+    plt.savefig("presitigious_rate_aging.pdf")
+    plt.close()
+
+
 def all_analyses():
     gs = GoogleSheets()
     profs = gs.read_profs()
@@ -367,8 +398,8 @@ def all_analyses():
     # print('Only considering the %d professors with Google Scholar profiles.' % len(profs))
 
     print('Looking exclusively at papers published in %s and later.' % starting_year)
-    aging = citation_aging_report(profs)
-    plot_aging(aging)
+    plot_citation_aging(citation_aging_report(profs))
+    plot_prestigious_rate_aging(prestigious_rate_aging_report(profs))
 
     run_analyses(profs, "plots_all.pdf")
     # just consider profs who finished their PhD within the past ten years
@@ -402,7 +433,8 @@ def run_analyses(profs, pdf_output_filename):
          {school: statistics.median([rate for prof, rate in prof_ppub_rate.items() if prof.school == school])
           for school in SCHOOLS})
     for j in TOP_JOURNALS:
-        plot(pp, j, pubs_for_school_in_journal(top_papers, j))
+        title = j.title().replace(' Of ', ' of ').replace(' And ', ' and ').replace(' The ', ' the ')
+        plot(pp, title, pubs_for_school_in_journal(top_papers, j))
     pp.close()
 
 
