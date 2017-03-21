@@ -324,28 +324,35 @@ def plot(pdf_pages, title, dict):
 
 
 def plot_aging(aging):
-    fig, ax1 = plt.subplots()
-    ax1.bar([age for age, cites in enumerate(aging)],
+    plt.bar([age for age, cites in enumerate(aging)],
             [len(cites) for age, cites in enumerate(aging)],
             label="sample size", color=[0.8,0.8,0.8])
     plt.xticks([age for age, cites in enumerate(aging)],
                [age if age < 10 else '>=10' for age, cites in enumerate(aging)])
-    ax1.set_xlabel("Number of years since faculty's graduation")
-    ax2 = plt.gca().twinx()
-    ax2.plot([age for age, cites in enumerate(aging)],
+    plt.xlabel("Years since faculty's graduation")
+    plt.ylabel("Number of faculty")
+    plt.gca().set_axisbelow(True)
+    plt.gca().yaxis.grid(True)
+    plt.savefig("age_dist.pdf")
+    plt.close()
+
+    plt.plot([age for age, cites in enumerate(aging)],
              [statistics.median(cites) for age, cites in enumerate(aging)],
              label="median citations")
-    ax2.plot([age for age, cites in enumerate(aging)],
+    plt.plot([age for age, cites in enumerate(aging)],
              [statistics.mean(cites) for age, cites in enumerate(aging)], '--',
              label="mean citations")
-    ax2.legend(loc=1)
-    ax1.legend(loc=2)
-    ax2.set_ylabel("Citations per faculty")
-    ax1.set_ylabel("Number of faculty")
-    ax1.set_ylim([0, 700])
-    ax2.set_ylim([0, 1700])
-    plt.savefig("aging.pdf")
+    plt.xticks([age for age, cites in enumerate(aging)],
+               [age if age < 10 else '>=10' for age, cites in enumerate(aging)])
+    plt.xlabel("Years since faculty's graduation")
+    plt.legend(loc=2)
+    plt.ylim([0, 1500])
+    plt.ylabel("Citations per faculty")
+    plt.gca().set_axisbelow(True)
+    plt.gca().yaxis.grid(True)
+    plt.savefig("citation_aging.pdf")
     plt.close()
+
 
 def all_analyses():
     gs = GoogleSheets()
