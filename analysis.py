@@ -332,6 +332,7 @@ def plot(pdf_pages, title, dict):
     plt.gca().set_axisbelow(True)
     plt.gca().yaxis.grid(True)
     plt.title(title)
+    plt.gcf().tight_layout()
     plt.savefig(pdf_pages, format='pdf')
     plt.close()
 
@@ -346,6 +347,7 @@ def plot_citation_aging(aging):
     plt.ylabel("Number of faculty")
     plt.gca().set_axisbelow(True)
     plt.gca().yaxis.grid(True)
+    plt.gcf().tight_layout()
     plt.savefig("age_dist.pdf")
     plt.close()
 
@@ -363,6 +365,7 @@ def plot_citation_aging(aging):
     plt.ylabel("Citations per faculty")
     plt.gca().set_axisbelow(True)
     plt.gca().yaxis.grid(True)
+    plt.gcf().tight_layout()
     plt.savefig("citation_aging.pdf")
     plt.close()
 
@@ -382,7 +385,8 @@ def plot_prestigious_rate_aging(aging):
     plt.ylim([0, 1.2])
     plt.gca().set_axisbelow(True)
     plt.gca().yaxis.grid(True)
-    plt.savefig("presitigious_rate_aging.pdf")
+    plt.gcf().tight_layout()
+    plt.savefig("prestigious_rate_aging.pdf")
     plt.close()
 
 

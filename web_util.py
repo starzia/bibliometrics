@@ -1,3 +1,8 @@
+# Simple Python3 web scraping library by Steve Tarzia
+#
+# PREREQUISITES:
+# pip install pycurl bs4 chardet lxml
+
 import pycurl
 from io import BytesIO
 import re

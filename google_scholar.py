@@ -78,6 +78,7 @@ class Paper:
                      wos_citations = parse_int(get_from_array(s, 5)),
                      id = get_from_array(s, 6))
 
+
 class GoogleScholar:
     def __init__(self, executable_path=None):
         self.selenium_driver = \
