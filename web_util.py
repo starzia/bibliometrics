@@ -116,6 +116,7 @@ def get_string(url):
 
 
 def get_tree(url):
+    """:return: a document tree that can be processed by css_select() or one of the callable Selector objects."""
     return tree_from_string(get_string(url))
 
 
@@ -145,6 +146,7 @@ def strip_whitespace(str):
 
 
 class Selector:
+    """A callable object for extracting the text of an HTML element matching a certain CSS selector."""
     def __init__(self, css_selector):
         self.css_selector = css_selector
 
@@ -156,6 +158,7 @@ class Selector:
 
 
 class HrefSelector:
+    """A callable object for extracting the url of an HTML link whose description text contains certain text."""
     def __init__(self, css_selector: str, *anchor_text: str):
         """anchor_text can be a list of strings or a single string."""
         self.css_selector = css_selector
@@ -170,6 +173,8 @@ class HrefSelector:
 
 
 class ListSelector:
+    """A callable object for extracting the text contents of all elements in an HTML document matching a certain
+    CSS selector."""
     def __init__(self, css_selector: str):
         self.css_selector = css_selector
 
@@ -181,6 +186,8 @@ class ListSelector:
 
 
 class HrefListSelector:
+    """A callable object for extracting all the urls in an HTML document from anchor elements matching a certain
+    CSS selector."""
     def __init__(self, css_selector):
         self.css_selector = css_selector
 
