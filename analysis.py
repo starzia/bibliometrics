@@ -10,7 +10,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.ticker
 
 from professor import Professor
-from typing import List, Dict, AnyStr
+from typing import List, Dict, AnyStr, Tuple
 from professor_scraper import load_paper_list
 from google_scholar import Paper, STARTING_YEAR, get_year
 from google_sheets import GoogleSheets
@@ -128,8 +128,7 @@ def is_in_journal(contains_journal_name, journal):
         return abbreviate(journal) in abbreviated_name
 
 
-# these variables control which papers are considered
-paper_folders = ['scholar_profile', 'scholar_search']
+# These variables control which papers are considered.
 starting_year = STARTING_YEAR
 ignored_scholar_citation_ids = set([])
 try:
@@ -137,22 +136,26 @@ try:
         ignored_scholar_citation_ids = set([l.replace('\n', '') for l in f.readlines()])
 except FileNotFoundError:
     print("WARNING: did not find papers_to_ignore.txt")
-paper_cache = {}
 
 
-def load_papers(prof):
-    global paper_folders, starting_year, paper_cache
-    if prof not in paper_cache:
-        papers = []
-        for f in paper_folders:
-            papers.extend([p for p in [Paper.from_string(s) for s in load_paper_list(f, prof)]
-                           if p.year > starting_year and p.id not in ignored_scholar_citation_ids])
-        paper_cache[prof] = papers
-    return paper_cache[prof]
+def load_scholar_papers(prof, ignore_search_results=False):
+    global starting_year, scholar_paper_cache
+    papers = []
+    for f in ['scholar_profile', 'scholar_search']:
+        papers.extend([p for p in [Paper.from_string(s) for s in load_paper_list(f, prof)]
+                       if p.year > starting_year and p.id not in ignored_scholar_citation_ids])
+        # ignore Scholar search results if we have a profile
+        if len(papers) > 0 or ignore_search_results:
+            break
+    return papers
+
+
+def citations(paper_list: List[Paper]) -> List[Tuple[string, string]]:
+    return [(paper.venue, paper.pretty_citation()) for paper in paper_list]
 
 
 def count_citations(prof):
-    return sum(int(paper.scholar_citations) for paper in load_papers(prof))
+    return sum(int(paper.scholar_citations) for paper in load_scholar_papers(prof))
 
 
 def citation_aging_report(profs) -> List[List[int]]:
@@ -173,15 +176,19 @@ def prestigious_rate_aging_report(profs) -> List[List[float]]:
             for i in range(1, 12)]
 
 
-def load_papers_including_html(prof):
-    candidates = []  # a list of 2-tuples containing the journal title (and ideally only that) and a citation string
-    # Try google scholar results first
-    for paper in load_papers(prof):
-        candidates.append((paper.venue, paper.pretty_citation()))
-    # if there were no google scholar search results, then use the faculty directory, if available
+def load_papers(prof) -> List[Tuple[string, string]]:
+    """Uses the best source available: Scholar profile, then faculty directory, then Scholar search results.
+    :return: a list of 2-tuples containing the journal title (and ideally only that) and a citation string. """
+
+    # Try google scholar profile results first
+    candidates = citations(load_scholar_papers(prof, ignore_search_results=True))
+    # if there is no Scholar profile, try to use the faculty directory
     if len(candidates) == 0 and prof.paper_list_url:
         candidates = [(citation, citation) for citation in load_paper_list('paper_list', prof)
                       if get_year(citation) and get_year(citation) >= starting_year]
+    # if we still have no results, then use Scholar search results
+    if len(candidates) == 0:
+        candidates = citations(load_scholar_papers(prof, ignore_search_results=False))
     return candidates
 
 
@@ -189,7 +196,7 @@ def papers_in_top_journals(professors: List[Professor]) -> Dict[Professor, AnySt
     """:return dict mapping from professor to a list of titles"""
     top_papers = {}
     for p in professors:
-        candidates = load_papers_including_html(p)
+        candidates = load_papers(p)
         # filter out papers in the top journals
         top_papers[p] = [citation for (journal, citation) in candidates if is_a_top_journal(journal)]
     return top_papers
@@ -199,7 +206,7 @@ def top_journal_pubs_for(school, professors: List[Professor]):
     candidates = []
     for p in professors:
         if p.school == school:
-            candidates.extend(load_papers_including_html(p))
+            candidates.extend(load_papers(p))
     candidates = deduplicate(candidates,
                              lambda c: c[1],
                              lambda c1, c2: strings_are_similar(c1[1], c2[1]))
@@ -220,7 +227,7 @@ def print_top_journal_results(top_papers_for_each_prof: Dict[Professor, List[Any
 
 
 def pubs_for_school_in_journal(professors, journal_name):
-    return {school: sum([sum([is_in_journal(paper[0], journal_name) for paper in load_papers_including_html(prof)])
+    return {school: sum([sum([is_in_journal(paper[0], journal_name) for paper in load_papers(prof)])
                          for prof in professors if prof.school == school])
             for school in SCHOOLS}
 
