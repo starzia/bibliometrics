@@ -150,7 +150,7 @@ def load_scholar_papers(prof, ignore_search_results=False):
     return papers
 
 
-def citations(paper_list: List[Paper]) -> List[Tuple[string, string]]:
+def citations(paper_list: List[Paper]) -> List[Tuple[str, str]]:
     return [(paper.venue, paper.pretty_citation()) for paper in paper_list]
 
 
@@ -176,7 +176,7 @@ def prestigious_rate_aging_report(profs) -> List[List[float]]:
             for i in range(1, 12)]
 
 
-def load_papers(prof) -> List[Tuple[string, string]]:
+def load_papers(prof) -> List[Tuple[str, str]]:
     """Uses the best source available: Scholar profile, then faculty directory, then Scholar search results.
     :return: a list of 2-tuples containing the journal title (and ideally only that) and a citation string. """
 
@@ -269,7 +269,7 @@ def h_index_for_profs(professors: List[Professor]):
     # gather and deduplicate publications, so that we don't count a paper twice if it had two authors at the school
     pubs = []
     for p in professors:
-        pubs.extend(load_papers(p))
+        pubs.extend(load_scholar_papers(p))
     pubs = deduplicate(pubs)
 
     return h_index_from_citations([c.scholar_citations for c in pubs])
@@ -389,7 +389,7 @@ def plot_prestigious_rate_aging(aging):
     plt.xlabel("Years since faculty's graduation")
     plt.legend(loc=1)
     plt.ylabel("Career-average prestigious publications per year")
-    plt.ylim([0, 1.2])
+    plt.ylim([0, 1.1])
     plt.gca().set_axisbelow(True)
     plt.gca().yaxis.grid(True)
     plt.gcf().tight_layout()
