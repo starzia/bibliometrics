@@ -15,7 +15,7 @@ Mac users can install Python 3 using brew.
 Install the prerequisite packages as follows:
 
     pip install --user lxml cssselect pprint selenium unidecode google-api-python-client \
-        pycurl bs4 chardet editdistance matplotlib pdfminer
+        pycurl bs4 chardet editdistance matplotlib pdfminer3k
 
 (Above, the `pip` command might actually be `pip3` on your system, and you may not need the `--user` flag.)
 
