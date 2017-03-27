@@ -85,7 +85,7 @@ class Professor:
         first_name = parts[0]
         last_name = parts[-1]
         # deal with cases like "R. Kipp Martin"
-        if len(parts) > 2 and len(parts[1]) > 2:
+        if len(parts) > 2 and len(parts[1]) > 2 and not len(parts[0]) > 2:
             first_name = parts[1]
         if len(parts) > 2 and len(last_name) <= 3 and last_name[:2] == 'Jr' or last_name[:2] == 'Sr':
             last_name = parts[-2]
