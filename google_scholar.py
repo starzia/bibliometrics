@@ -44,6 +44,7 @@ def get_year(citation: str):
             return re.findall(r"[12][0-9]{3}", citation)[-1]
         except IndexError:
             # if no year is present, then return None
+            # TODO: maybe treat "Forthcoming" as the current year
             return None
 
 

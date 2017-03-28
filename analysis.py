@@ -350,7 +350,7 @@ def plot_citation_aging(aging):
             label="sample size", color=[0.8,0.8,0.8])
     plt.xticks([age for age, cites in enumerate(aging)],
                [age if age < 10 else '>=10' for age, cites in enumerate(aging)])
-    plt.xlabel("Years since faculty's graduation")
+    plt.xlabel("Years since professor's graduate degree")
     plt.ylabel("Number of faculty")
     plt.gca().set_axisbelow(True)
     plt.gca().yaxis.grid(True)
@@ -366,7 +366,7 @@ def plot_citation_aging(aging):
              label="mean citations")
     plt.xticks([age for age, cites in enumerate(aging)],
                [age if age < 10 else '>=10' for age, cites in enumerate(aging)])
-    plt.xlabel("Years since faculty's graduation")
+    plt.xlabel("Years since professor's graduate degree")
     plt.legend(loc=2)
     plt.ylim([0, 1500])
     plt.ylabel("Citations per faculty")
@@ -386,7 +386,7 @@ def plot_prestigious_rate_aging(aging):
              label="mean rate")
     plt.xticks([age for age, cites in enumerate(aging)],
                [age if age < 10 else '>=10' for age, cites in enumerate(aging)])
-    plt.xlabel("Years since faculty's graduation")
+    plt.xlabel("Years since professor's graduate degree")
     plt.legend(loc=1)
     plt.ylabel("Career-average prestigious publications per year")
     plt.ylim([0, 1.1])
@@ -431,10 +431,10 @@ def run_analyses(profs, pdf_output_filename):
     plot(pp, 'School h-index', h_index_by_school(profs))
 
     j_stats = {school: top_journal_pubs_for(school, profs) for school in SCHOOLS}
-    plot(pp, 'Prestigious publication count', j_stats)
-    plot(pp, 'Mean prestigious publications per faculty', normalize(j_stats, profs))
+    plot(pp, 'Prestigious article count', j_stats)
+    plot(pp, 'Mean prestigious articles per faculty', normalize(j_stats, profs))
     top_papers = papers_in_top_journals(profs)
-    plot(pp, 'Median prestigious publications per faculty',
+    plot(pp, 'Median prestigious articles per faculty',
          {school: statistics.median(cites)
           for school, cites in top_journal_pubs_for_profs_at_school(top_papers).items()})
     prof_ppub_rate = normalize_to_age(top_papers);
@@ -445,7 +445,8 @@ def run_analyses(profs, pdf_output_filename):
          {school: statistics.median([rate for prof, rate in prof_ppub_rate.items() if prof.school == school])
           for school in SCHOOLS})
     for j in TOP_JOURNALS:
-        title = j.title().replace(' Of ', ' of ').replace(' And ', ' and ').replace(' The ', ' the ')
+        title = j.title().replace(' Of ', ' of ').replace(' And ', ' and ').replace(' The ', ' the ')\
+            .replace('Rand J', 'RAND J')
         plot(pp, title, pubs_for_school_in_journal(top_papers, j))
     pp.close()
 
