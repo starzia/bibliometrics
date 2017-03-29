@@ -323,6 +323,20 @@ def normalize_to_age(top_papers_for_each_prof: Dict[Professor, List[AnyStr]]) ->
             for prof in [p for p in top_papers_for_each_prof if p.graduation_year]}
 
 
+def approximate_missing_graduation_years(profs):
+    """For profs with out a graduation_year defined, use the year of their earliest publication as an approximation.
+    The Professor objects passed in are modified with the new graduation_year."""
+    for prof in profs:
+        if not prof.graduation_year:
+            # Note that we use the full list of papers, including those older than ten years.
+            paper_years = []
+            for folder in ['scholar_profile', 'scholar_search', 'paper_list']:
+                paper_years.extend([get_year(paper) for paper in load_paper_list(folder, prof)])
+            paper_years = [p for p in paper_years if p]  # eliminate None values
+            if len(paper_years) > 0:
+                prof.graduation_year = min(paper_years)
+
+
 def plot(pdf_pages, title, dict):
     print('\n%s:' % title)
     data = sort_and_print_dict(dict)
@@ -397,11 +411,19 @@ def plot_prestigious_rate_aging(aging):
     plt.close()
 
 
+def plot_early_frac(profs, early_profs):
+    early = {school: len([p for p in early_profs if p.school == school]) for school in SCHOOLS}
+    pp = PdfPages('early_frac.pdf')
+    plot(pp, 'Fraction of faculty who are early-career', normalize(early, profs))
+    pp.close();
+
+
 def all_analyses():
     gs = GoogleSheets()
     profs = gs.read_profs()
     # remove hidden profs
     profs = [p for p in profs if not p.hidden]
+    approximate_missing_graduation_years(profs)
 
     global paper_folders, starting_year
     # # just consider profs with a google scholar profile
@@ -415,7 +437,9 @@ def all_analyses():
 
     run_analyses(profs, "plots_all.pdf")
     # just consider profs who finished their PhD within the past ten years
-    run_analyses([p for p in profs if p.graduation_year and p.graduation_year >= starting_year], "plots_early.pdf")
+    early_profs = [p for p in profs if p.graduation_year and p.graduation_year >= starting_year]
+    plot_early_frac(profs, early_profs)
+    run_analyses(early_profs, "plots_early.pdf")
 
 
 def run_analyses(profs, pdf_output_filename):

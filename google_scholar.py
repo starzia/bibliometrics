@@ -35,17 +35,19 @@ def get_from_array(arr, idx):
 
 
 def get_year(citation: str):
-    try:
-        # first, look for the year inside parens
-        return re.findall(r"\(([12][0-9]{3})\)", citation)[0]
-    except IndexError:
-        # if no year exists inside parens, then take the last number that looks like a year
-        try:
-            return re.findall(r"[12][0-9]{3}", citation)[-1]
-        except IndexError:
-            # if no year is present, then return None
-            # TODO: maybe treat "Forthcoming" as the current year
-            return None
+    # first, look for the year inside parens
+    for number in re.findall(r"\(([12][0-9]{3})\)", citation):
+        if 1900 <= int(number) <= 2030:
+            return number
+    # if no year exists inside parens, then take the last number that looks like a year
+    numbers = re.findall(r"[12][0-9]{3}", citation)
+    numbers.reverse()
+    for number in numbers:
+        if 1900 <= int(number) <= 2030:
+            return number
+    # if no year is present, then return None
+    # TODO: maybe treat "Forthcoming" as the current year
+    return None
 
 
 class Paper:
