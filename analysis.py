@@ -193,12 +193,16 @@ def load_papers(prof) -> List[Tuple[str, str]]:
 
 
 def papers_in_top_journals(professors: List[Professor]) -> Dict[Professor, AnyStr]:
-    """:return dict mapping from professor to a list of titles"""
+    """:return dict mapping from professor to a list of titles."""
     top_papers = {}
+    # also count the total number of papers since start_date
+    total_papers = 0
     for p in professors:
         candidates = load_papers(p)
+        total_papers += len(candidates)
         # filter out papers in the top journals
         top_papers[p] = [citation for (journal, citation) in candidates if is_a_top_journal(journal)]
+    print("\nTotal of %d papers since %s\n" % (total_papers, starting_year))
     return top_papers
 
 
