@@ -390,7 +390,7 @@ def plot_citation_aging(aging):
     plt.xlabel("Years since professor's graduate degree")
     plt.legend(loc=2)
     plt.ylim([0, 1500])
-    plt.ylabel("Citations per faculty")
+    plt.ylabel("Citations per professor")
     plt.gca().set_axisbelow(True)
     plt.gca().yaxis.grid(True)
     plt.gcf().tight_layout()
@@ -456,16 +456,16 @@ def run_analyses(profs, pdf_output_filename):
     citations = citations_for_profs_in_school(profs)
     citations_per_school = {school: sum(cites) for school, cites in citations.items()}
     plot(pp, 'Citations', citations_per_school)
-    plot(pp, 'Mean citations per faculty', normalize(citations_per_school, profs))
-    plot(pp, 'Median citations per faculty', {school: statistics.median(cites) for school, cites in citations.items()})
+    plot(pp, 'Mean citations per professor', normalize(citations_per_school, profs))
+    plot(pp, 'Median citations per professors', {school: statistics.median(cites) for school, cites in citations.items()})
 
     plot(pp, 'School h-index', h_index_by_school(profs))
 
     j_stats = {school: top_journal_pubs_for(school, profs) for school in SCHOOLS}
     plot(pp, 'Prestigious article count', j_stats)
-    plot(pp, 'Mean prestigious articles per faculty', normalize(j_stats, profs))
+    plot(pp, 'Mean prestigious articles per professor', normalize(j_stats, profs))
     top_papers = papers_in_top_journals(profs)
-    plot(pp, 'Median prestigious articles per faculty',
+    plot(pp, 'Median prestigious articles per professor',
          {school: statistics.median(cites)
           for school, cites in top_journal_pubs_for_profs_at_school(top_papers).items()})
     prof_ppub_rate = normalize_to_age(top_papers);
