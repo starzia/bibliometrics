@@ -363,11 +363,14 @@ def plot(pdf_pages, title, dict):
 
 
 def plot_citation_aging(aging):
-    plt.bar([age for age, cites in enumerate(aging)],
-            [len(cites) for age, cites in enumerate(aging)],
+    prof_count = [len(cites) for cites in aging]
+    print('\n%f%% of faculty have >= 10 years since graduation\n' % (100 * prof_count[-1] / sum(prof_count)))
+
+    plt.bar([age for age, count in enumerate(prof_count)],
+            [count for age, count in enumerate(prof_count)],
             label="sample size", color=[0.8,0.8,0.8])
-    plt.xticks([age for age, cites in enumerate(aging)],
-               [age if age < 10 else '>=10' for age, cites in enumerate(aging)])
+    plt.xticks([age for age, cites in enumerate(prof_count)],
+               [age if age < 10 else '>=10' for age, cites in enumerate(prof_count)])
     plt.xlabel("Years since professor's graduate degree")
     plt.ylabel("Number of faculty")
     plt.gca().set_axisbelow(True)
