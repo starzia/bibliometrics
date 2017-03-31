@@ -153,7 +153,7 @@ def load_mturk_results(csv_filename):
     gs = GoogleSheets()
     profs = gs.read_profs()
     for p in profs:
-        if p.slug() in year_to_record:
+        if p.slug() in year_to_record and year_to_record[p.slug()] != p.graduation_year:
             p.graduation_year = year_to_record[p.slug()]
             time.sleep(1)
             print("%s: saving graduation year %s" % (p.slug(), p.graduation_year))
