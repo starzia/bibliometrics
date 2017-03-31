@@ -42,6 +42,7 @@ def scrape_yale():
     # Yale's econ profs have skeleton profiles in their school directory and more detailed ones in the dept directory.
     # eg., http://som.yale.edu/dirk-bergemann
     #  and http://economics.yale.edu/people/dirk-bergemann
+    # UPDATE: it turns out that we don't want to include these econ profs, so we set them as hidden below.
 
     # as a side-effect, this scrape will populate the econ_faculty_to_urls dictionary
     profs = scrape_professors(
@@ -65,6 +66,9 @@ def scrape_yale():
                              extracts_title=Selector('div.group-right div.field-item'),
                              extracts_cv_url=HrefSelector('div.group-right div.field-item a', 'CV'),
                              extracts_personal_url=HrefSelector('div.group-right div.field-item a', 'Website'))
+    # Hide all the econ profs.
+    for p in econ_profs:
+        p.hidden = True
     return profs + econ_profs
 
 
