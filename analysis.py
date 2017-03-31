@@ -425,12 +425,22 @@ def plot_early_frac(profs, early_profs):
     pp.close();
 
 
+def print_professors(profs):
+    for school in SCHOOLS:
+        print()
+        print('\\textbf{%s}:' % school)
+        for p in sorted(profs, key=lambda prof: prof.simple_name()):
+            if p.school == school:
+                print('%s,%s' % (p.name, '*' if p.graduation_year and int(p.graduation_year) >= 2007 else ''))
+
+
 def all_analyses():
     gs = GoogleSheets()
     profs = gs.read_profs()
     # remove hidden profs
     profs = [p for p in profs if not p.hidden]
     approximate_missing_graduation_years(profs)
+    print_professors(profs)
 
     global paper_folders, starting_year
     # # just consider profs with a google scholar profile
