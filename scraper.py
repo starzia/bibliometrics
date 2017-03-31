@@ -147,7 +147,7 @@ def load_mturk_results(csv_filename):
         # if an answer is in the majority, record it
         for a in answers:
             if answers.count(a) > len(answers) * 0.5:
-                year_to_record[slug] = answers[0]
+                year_to_record[slug] = a
                 continue
     # save results
     gs = GoogleSheets()
