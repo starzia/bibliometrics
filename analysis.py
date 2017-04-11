@@ -398,6 +398,32 @@ def plot_citation_aging(aging):
     plt.close()
 
 
+def plot_early_dist(early_profs):
+    plt.figure(figsize=(4, 8))
+    for i, school in enumerate(SCHOOLS):
+        plt.subplot(len(SCHOOLS), 1, i+1)
+        plt.title('Kellogg' if school == 'Northwestern' else school)
+        aging = citation_aging_report([p for p in early_profs if p.school == school])
+        prof_count = [len(cites) for cites in aging ]
+        plt.bar([age for age, count in enumerate(prof_count)],
+                [count for age, count in enumerate(prof_count)],
+                color=[.29,0,.51] if school == 'Northwestern' else [0.8,0.8,0.8])
+        plt.tick_params(
+            axis='x',  # changes apply to the x-axis
+            which='both',  # both major and minor ticks are affected
+            bottom='off' if i < len(SCHOOLS) - 1 else 'on',
+            top='off',  # ticks along the top edge are off
+            labelbottom='off')  # labels along the bottom edge are off
+        plt.xticks([age for age, cites in enumerate(prof_count)],
+                   [age for age, cites in enumerate(prof_count)])
+    plt.xlabel("Years since professor's graduate degree")
+    plt.gca().set_axisbelow(True)
+    plt.gca().yaxis.grid(True)
+    plt.gcf().tight_layout()
+    plt.savefig("early_dist.pdf")
+    plt.close()
+
+
 def plot_prestigious_rate_aging(aging):
     plt.plot([age for age, cites in enumerate(aging)],
              [statistics.median(cites) for age, cites in enumerate(aging)],
@@ -455,6 +481,7 @@ def all_analyses():
     run_analyses(profs, "plots_all.pdf")
     # just consider profs who finished their PhD within the past ten years
     early_profs = [p for p in profs if p.graduation_year and p.graduation_year >= starting_year]
+    plot_early_dist(early_profs)
     plot_early_frac(profs, early_profs)
     run_analyses(early_profs, "plots_early.pdf")
 
