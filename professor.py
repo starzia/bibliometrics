@@ -63,6 +63,9 @@ class Professor:
                          paper_list_url=get_from_row(row, 12),
                          hidden=get_from_row(row, 7) is not None)
 
+    def copy(self):
+        return Professor.from_spreadsheet_row(self.spreadsheet_row())
+
     def merge(self, other_prof):
         """add any non-None attributes from the other_prof"""
         for attr, value in other_prof.__dict__.items():

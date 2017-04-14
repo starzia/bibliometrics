@@ -16,7 +16,7 @@ from google_scholar import Paper, STARTING_YEAR, get_year
 from google_sheets import GoogleSheets
 from web_util import strip_whitespace
 
-SCHOOLS = ['Northwestern', 'Harvard', 'Chicago', 'MIT', 'Stanford', 'UPenn', 'Berkeley', 'Yale', 'Columbia']
+AFFILIATIONS = ['Northwestern', 'Harvard', 'Chicago', 'MIT', 'Stanford', 'UPenn', 'Berkeley', 'Yale', 'Columbia']
 
 ABBREVIATIONS = {
     'the': None,
@@ -92,6 +92,150 @@ HIGH_COLLISION_TOP_JOURNALS = [
     'science',
     'nature',
 ]
+
+KELLOGG_DEPTS = {
+    'Accounting': ['northwestern_daniel_aobdia',
+                   'northwestern_craig_chapman',
+                   'northwestern_ronald_a_dye',
+                   'northwestern_matthew_lyle',
+                   'northwestern_robert_magee',
+                   'northwestern_james_naughton',
+                   'northwestern_swaminathan_sridharan',
+                   'northwestern_linda_vincent',
+                   'northwestern_beverly_walther',
+                   'northwestern_clare_wang',
+                   'northwestern_danqi_hu'],
+    'Finance': ['northwestern_torben_andersen',
+                'northwestern_scott_baker',
+                'northwestern_efraim_benmelech',
+                'northwestern_nicolas_crouzet',
+                'northwestern_anthony_defusco',
+                'northwestern_ian_dewbecker',
+                'northwestern_janice_c_eberly',
+                'northwestern_michael_j_fishman',
+                'northwestern_carola_frydman',
+                'northwestern_benjamin_iverson',
+                'northwestern_ravi_jagannathan',
+                'northwestern_robert_korajczyk',
+                'northwestern_lorenz_kueng',
+                'northwestern_david_a_matsa',
+                'northwestern_robert_l_mcdonald',
+                'northwestern_brian_melzer',
+                'northwestern_konstantin_w_milbradt',
+                'northwestern_john_mondragon',
+                'northwestern_charles_nathanson',
+                'northwestern_aharon_ofer',
+                'northwestern_dimitris_papanikolaou',
+                'northwestern_mitchell_a_petersen',
+                'northwestern_artur_raviv',
+                'northwestern_constantinos_skiadas',
+                'northwestern_viktor_todorov',
+                'northwestern_kathleen_hagerty',
+                'northwestern_filippo_mezzanotti',
+                'northwestern_sergio_rebelo',
+                'northwestern_paola_sapienza'],
+    'Marketing': ['northwestern_eric_t_anderson',
+                  'northwestern_james_anderson',
+                  'northwestern_ulf_bockenholt',
+                  'northwestern_miguel_brendl',
+                  'northwestern_bobby_calder',
+                  'northwestern_gregory_carpenter',
+                  'northwestern_moran_cerf',
+                  'northwestern_alexander_chernev',
+                  'northwestern_jennifer_cutler',
+                  'northwestern_kelly_goldsmith',
+                  'northwestern_brett_gordon',
+                  'northwestern_kent_grayson',
+                  'northwestern_lakshman_krishnamurthi',
+                  'northwestern_aparna_labroo',
+                  'northwestern_angela_y_lee',
+                  'northwestern_blake_mcshane',
+                  'northwestern_neal_roese',
+                  'northwestern_derek_d_rucker',
+                  'northwestern_rima_touretillery',
+                  'northwestern_alice_tybout',
+                  'northwestern_song_yao',
+                  'northwestern_florian_zettelmeyer',
+                  'northwestern_anne_coughlan',
+                  'northwestern_philip_kotler',
+                  'northwestern_brian_sternthal',
+                  'northwestern_anna_tuchman'],
+    'MEDS': ['northwestern_nabil_alnajjar',
+             'northwestern_sandeep_baliga',
+             'northwestern_achal_bassamboo',
+             'northwestern_erika_deserranno',
+             'northwestern_georgy_egorov',
+             'northwestern_timothy_feddersen',
+             'northwestern_ronen_gradwohl',
+             'northwestern_taiwei_hu',
+             'northwestern_willemien_kets',
+             'northwestern_peter_klibanoff',
+             'northwestern_daniel_martin',
+             'northwestern_dylan_minor',
+             'northwestern_ameet_morjaria',
+             'northwestern_nicola_persico',
+             'northwestern_nancy_qian',
+             'northwestern_yuval_salant',
+             'northwestern_alvaro_sandroni',
+             'northwestern_james_schummer',
+             'northwestern_eran_shmaya',
+             'northwestern_jorg_spenkuch',
+             'northwestern_jan_a_van_mieghem',
+             'northwestern_nemanja_antic',
+             'northwestern_david_austensmith',
+             'northwestern_joshua_mollner'],
+    'MORS': ['northwestern_jeanne_brett',
+             'northwestern_maryam_kouchaki',
+             'northwestern_nour_kteily',
+             'northwestern_jon_maner',
+             'northwestern_victoria_medvec',
+             'northwestern_loran_nordgren',
+             'northwestern_william_ocasio',
+             'northwestern_lauren_rivera',
+             'northwestern_edward_ned_smith',
+             'northwestern_nicole_stephens',
+             'northwestern_leigh_thompson',
+             'northwestern_brian_uzzi',
+             'northwestern_dashun_wang',
+             'northwestern_adam_waytz',
+             'northwestern_klaus_weber',
+             'northwestern_edward_zajac',
+             'northwestern_sally_blount',
+             'northwestern_jillian_chown',
+             'northwestern_brayden_king'],
+    'Operations': ['northwestern_chaithanya_bandi',
+                   'northwestern_robert_bray',
+                   'northwestern_sunil_chopra',
+                   'northwestern_itai_gurvich',
+                   'northwestern_ozge_islegen',
+                   'northwestern_martin_lariviere',
+                   'northwestern_antonio_morenogarcia',
+                   'northwestern_daniel_russo'],
+    'Strategy': ['northwestern_daniel_barron',
+                 'northwestern_david_besanko',
+                 'northwestern_nicola_bianchi',
+                 'northwestern_meghan_busse',
+                 'northwestern_david_dranove',
+                 'northwestern_craig_garthwaite',
+                 'northwestern_george_georgiadis',
+                 'northwestern_paul_hirsch',
+                 'northwestern_thomas_n_hubbard',
+                 'northwestern_edward_fx_hughes',
+                 'northwestern_benjamin_f_jones',
+                 'northwestern_jin_li',
+                 'northwestern_niko_matouschek',
+                 'northwestern_michael_mazzeo',
+                 'northwestern_michael_powell',
+                 'northwestern_mark_satterthwaite',
+                 'northwestern_daniel_spulber',
+                 'northwestern_amanda_starc',
+                 'northwestern_jeroen_swinkels',
+                 'northwestern_benjamin_friedrich',
+                 'northwestern_therese_mcguire',
+                 'northwestern_sara_moreira',
+                 'northwestern_elena_prager',
+                 'northwestern_bryony_reich']
+}
 
 pp = pprint.PrettyPrinter(indent=4)
 non_letter_remover = str.maketrans('', '', string.punctuation + string.digits)
@@ -209,7 +353,7 @@ def papers_in_top_journals(professors: List[Professor]) -> Dict[Professor, AnySt
 def top_journal_pubs_for(school, professors: List[Professor]):
     candidates = []
     for p in professors:
-        if p.school == school:
+        if p.affiliation == school:
             candidates.extend(load_papers(p))
     candidates = deduplicate(candidates,
                              lambda c: c[1],
@@ -219,8 +363,8 @@ def top_journal_pubs_for(school, professors: List[Professor]):
 
 def top_journal_pubs_for_profs_at_school(top_papers_for_each_prof: Dict[Professor, List[AnyStr]]) -> Dict[AnyStr, int]:
     """ :return: a dict mapping each school to a list of publication counts, one for each prof at that school."""
-    return {school: [len(papers) for prof, papers in top_papers_for_each_prof.items() if prof.school == school]
-            for school in SCHOOLS}
+    return {school: [len(papers) for prof, papers in top_papers_for_each_prof.items() if prof.affiliation == school]
+            for school in AFFILIATIONS}
 
 
 def print_top_journal_results(top_papers_for_each_prof: Dict[Professor, List[AnyStr]]):
@@ -232,8 +376,8 @@ def print_top_journal_results(top_papers_for_each_prof: Dict[Professor, List[Any
 
 def pubs_for_school_in_journal(professors, journal_name):
     return {school: sum([sum([is_in_journal(paper[0], journal_name) for paper in load_papers(prof)])
-                         for prof in professors if prof.school == school])
-            for school in SCHOOLS}
+                         for prof in professors if prof.affiliation == school])
+            for school in AFFILIATIONS}
 
 
 def norm_str(my_string):
@@ -281,15 +425,15 @@ def h_index_for_profs(professors: List[Professor]):
 
 def citations_for_profs_in_school(professors: List[Professor]):
     school_citations = {}
-    for school in SCHOOLS:
-        school_citations[school] = [count_citations(p) for p in professors if p.school == school]
+    for school in AFFILIATIONS:
+        school_citations[school] = [count_citations(p) for p in professors if p.affiliation == school]
     return school_citations
 
 
 def h_index_by_school(professors: List[Professor]):
     school_h_index= {}
-    for school in SCHOOLS:
-        school_h_index[school] = h_index_for_profs([p for p in professors if p.school == school])
+    for school in AFFILIATIONS:
+        school_h_index[school] = h_index_for_profs([p for p in professors if p.affiliation == school])
     return school_h_index
 
 
@@ -317,7 +461,7 @@ def sort_and_print_dict(dict):
 def normalize(school_dict, professors):
     normalized = {}
     for school, val in school_dict.items():
-        profs_per_school = len([p for p in professors if p.school == school])
+        profs_per_school = len([p for p in professors if p.affiliation == school])
         normalized[school] = val*1.0/profs_per_school
     return normalized
 
@@ -400,10 +544,10 @@ def plot_citation_aging(aging):
 
 def plot_early_dist(early_profs):
     plt.figure(figsize=(4, 8))
-    for i, school in enumerate(SCHOOLS):
-        plt.subplot(len(SCHOOLS), 1, i+1)
+    for i, school in enumerate(AFFILIATIONS):
+        plt.subplot(len(AFFILIATIONS), 1, i + 1)
         plt.title('Kellogg' if school == 'Northwestern' else school)
-        aging = citation_aging_report([p for p in early_profs if p.school == school])
+        aging = citation_aging_report([p for p in early_profs if p.affiliation == school])
         prof_count = [len(cites) for cites in aging ]
         plt.bar([age for age, count in enumerate(prof_count)],
                 [count for age, count in enumerate(prof_count)],
@@ -411,7 +555,7 @@ def plot_early_dist(early_profs):
         plt.tick_params(
             axis='x',  # changes apply to the x-axis
             which='both',  # both major and minor ticks are affected
-            bottom='off' if i < len(SCHOOLS) - 1 else 'on',
+            bottom='off' if i < len(AFFILIATIONS) - 1 else 'on',
             top='off',  # ticks along the top edge are off
             labelbottom='off')  # labels along the bottom edge are off
         plt.xticks([age for age, cites in enumerate(prof_count)],
@@ -445,30 +589,47 @@ def plot_prestigious_rate_aging(aging):
 
 
 def plot_early_frac(profs, early_profs):
-    early = {school: len([p for p in early_profs if p.school == school]) for school in SCHOOLS}
+    early = {school: len([p for p in early_profs if p.affiliation == school]) for school in AFFILIATIONS}
     pp = PdfPages('early_frac.pdf')
     plot(pp, 'Fraction of faculty who are early-career', normalize(early, profs))
     pp.close();
 
 
 def print_professors(profs):
-    for school in SCHOOLS:
+    for school in AFFILIATIONS:
         print()
         print('\\textbf{%s}:' % school)
         for p in sorted(profs, key=lambda prof: prof.simple_name()):
-            if p.school == school:
+            if p.affiliation == school:
                 print('%s,%s' % (p.name, '*' if p.graduation_year and int(p.graduation_year) >= 2007 else ''))
+
+
+def kellogg_dept_labelled_profs(profs) -> List[Professor]:
+    """Return copies of the kellogg profs, with the "school" field now referring to their dept within Kellogg."""
+    dept_profs = []
+    for p in profs:
+        if p.school=="Northwestern":
+            copy = p.copy()
+            for dept, prof_list in KELLOGG_DEPTS.items():
+                for dept_p in prof_list:
+                    if dept_p == p.slug():
+                        copy.affiliation = dept
+                        break
+            dept_profs.append(copy)
+    return dept_profs
 
 
 def all_analyses():
     gs = GoogleSheets()
     profs = gs.read_profs()
+    for p in profs:
+        p.affiliation = p.school  # later we will do an analysis by department
     # remove hidden profs
     profs = [p for p in profs if not p.hidden]
     approximate_missing_graduation_years(profs)
     print_professors(profs)
 
-    global paper_folders, starting_year
+    # global paper_folders
     # # just consider profs with a google scholar profile
     # paper_folders = ['scholar_profile']
     # profs = [p for p in profs if p.google_scholar_url]
@@ -485,10 +646,15 @@ def all_analyses():
     plot_early_frac(profs, early_profs)
     run_analyses(early_profs, "plots_early.pdf")
 
+    # do an inter-departmental comparison of Kellogg depts
+    global AFFILIATIONS
+    AFFILIATIONS = KELLOGG_DEPTS.keys()  # this is a hack to plot dept results like school results
+    run_analyses(kellogg_dept_labelled_profs(profs), "plots_kellogg_dept.pdf")
+
 
 def run_analyses(profs, pdf_output_filename):
     pp = PdfPages(pdf_output_filename)
-    plot(pp, 'Faculty count', {school:len([p for p in profs if p.school==school]) for school in SCHOOLS})
+    plot(pp, 'Faculty count', {school:len([p for p in profs if p.affiliation==school]) for school in AFFILIATIONS})
 
     citations = citations_for_profs_in_school(profs)
     citations_per_school = {school: sum(cites) for school, cites in citations.items()}
@@ -498,7 +664,7 @@ def run_analyses(profs, pdf_output_filename):
 
     plot(pp, 'School h-index', h_index_by_school(profs))
 
-    j_stats = {school: top_journal_pubs_for(school, profs) for school in SCHOOLS}
+    j_stats = {school: top_journal_pubs_for(school, profs) for school in AFFILIATIONS}
     plot(pp, 'Prestigious article count', j_stats)
     plot(pp, 'Mean prestigious articles per professor', normalize(j_stats, profs))
     top_papers = papers_in_top_journals(profs)
@@ -507,11 +673,11 @@ def run_analyses(profs, pdf_output_filename):
           for school, cites in top_journal_pubs_for_profs_at_school(top_papers).items()})
     prof_ppub_rate = normalize_to_age(top_papers);
     plot(pp, 'Mean faculty prestigious publication rate',
-         {school: statistics.mean([rate for prof, rate in prof_ppub_rate.items() if prof.school == school])
-          for school in SCHOOLS})
+         {school: statistics.mean([rate for prof, rate in prof_ppub_rate.items() if prof.affiliation == school])
+          for school in AFFILIATIONS})
     plot(pp, 'Median faculty prestigious publication rate',
-         {school: statistics.median([rate for prof, rate in prof_ppub_rate.items() if prof.school == school])
-          for school in SCHOOLS})
+         {school: statistics.median([rate for prof, rate in prof_ppub_rate.items() if prof.affiliation == school])
+          for school in AFFILIATIONS})
     for j in TOP_JOURNALS:
         title = j.title().replace(' Of ', ' of ').replace(' And ', ' and ').replace(' The ', ' the ')\
             .replace('Rand J', 'RAND J')
