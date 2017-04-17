@@ -1,4 +1,5 @@
 *.pyc
+*.pdf
 .idea
 .credentials
 output/*

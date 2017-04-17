@@ -333,7 +333,15 @@ def load_papers(prof) -> List[Tuple[str, str]]:
     # if we still have no results, then use Scholar search results
     if len(candidates) == 0:
         candidates = citations(load_scholar_papers(prof, ignore_search_results=False))
-    return candidates
+    # filter out non-articles
+    taboo = ["editor", "call for papers", "annual report"]
+    real_candidates = []
+    for c in candidates:
+        for t in taboo:
+            if t in c[1]:
+                continue
+        real_candidates.append(c)
+    return real_candidates
 
 
 def papers_in_top_journals(professors: List[Professor]) -> Dict[Professor, AnyStr]:
@@ -346,6 +354,11 @@ def papers_in_top_journals(professors: List[Professor]) -> Dict[Professor, AnySt
         total_papers += len(candidates)
         # filter out papers in the top journals
         top_papers[p] = [citation for (journal, citation) in candidates if is_a_top_journal(journal)]
+        # detect anomalies
+        if len(top_papers[p]) > 30:
+            print("\nWARNING: found %d top papers for %s" % (len(top_papers[p]), p.slug()))
+            for paper in top_papers[p]:
+                print("\t" + strip_whitespace(paper))
     print("\nTotal of %d papers since %s\n" % (total_papers, starting_year))
     return top_papers
 
@@ -506,6 +519,39 @@ def plot(pdf_pages, title, dict):
     plt.close()
 
 
+def boxplot(pdf_pages, title, dict, logscale=False):
+    # sort schools by their median value
+    data = sorted(dict.items(), key=lambda entry: statistics.median(entry[1]))
+    data.reverse()
+
+    if not logscale:
+        plt.figure(figsize=(4,7))
+
+    box = plt.boxplot([e[1] for e in data], notch=False, patch_artist=True, medianprops={'color': 'black'},
+                      boxprops={'linewidth': 0}, whis='range')
+
+    for i, patch in enumerate(box['boxes']):
+        if data[i][0] == 'Northwestern':
+            patch.set_facecolor([.29, 0, .51])
+        else:
+            patch.set_facecolor([0.8, 0.8, 0.8])
+    plt.xticks(range(1, len(data)+1),
+               tuple(['Kellogg' if e[0] == 'Northwestern' else e[0] for e in data]),
+               rotation=30)
+    plt.gca().yaxis.set_major_locator(matplotlib.ticker.MaxNLocator(integer=True))  # only use integer y ticks
+    plt.gca().set_axisbelow(True)
+    if logscale:
+        plt.gca().set_yscale('log')
+    else:
+        # start y axis at zero
+        plt.ylim([0, plt.ylim()[1]])
+    plt.gca().yaxis.grid(True)
+    plt.title(title)
+    plt.gcf().tight_layout()
+    plt.savefig(pdf_pages, format='pdf')
+    plt.close()
+
+
 def plot_citation_aging(aging):
     prof_count = [len(cites) for cites in aging]
     print('\n%f%% of faculty have >= 10 years since graduation\n' % (100 * prof_count[-1] / sum(prof_count)))
@@ -654,11 +700,13 @@ def all_analyses():
 
 def run_analyses(profs, pdf_output_filename):
     pp = PdfPages(pdf_output_filename)
+
     plot(pp, 'Faculty count', {school:len([p for p in profs if p.affiliation==school]) for school in AFFILIATIONS})
 
     citations = citations_for_profs_in_school(profs)
     citations_per_school = {school: sum(cites) for school, cites in citations.items()}
     plot(pp, 'Citations', citations_per_school)
+    boxplot(pp, 'Citations per professor', citations, logscale=True)
     plot(pp, 'Mean citations per professor', normalize(citations_per_school, profs))
     plot(pp, 'Median citations per professors', {school: statistics.median(cites) for school, cites in citations.items()})
 
@@ -666,22 +714,28 @@ def run_analyses(profs, pdf_output_filename):
 
     j_stats = {school: top_journal_pubs_for(school, profs) for school in AFFILIATIONS}
     plot(pp, 'Prestigious article count', j_stats)
-    plot(pp, 'Mean prestigious articles per professor', normalize(j_stats, profs))
     top_papers = papers_in_top_journals(profs)
+    top_pubs_per_prof = top_journal_pubs_for_profs_at_school(top_papers)
+    plot(pp, 'Mean prestigious articles per professor',
+         {school: statistics.mean(cites) for school, cites in top_pubs_per_prof.items()})
     plot(pp, 'Median prestigious articles per professor',
-         {school: statistics.median(cites)
-          for school, cites in top_journal_pubs_for_profs_at_school(top_papers).items()})
+         {school: statistics.median(cites) for school, cites in top_pubs_per_prof.items()})
     prof_ppub_rate = normalize_to_age(top_papers);
+    school_ppub_rate = {school: [rate for prof, rate in prof_ppub_rate.items() if prof.affiliation == school]
+                        for school in AFFILIATIONS}
     plot(pp, 'Mean faculty prestigious publication rate',
-         {school: statistics.mean([rate for prof, rate in prof_ppub_rate.items() if prof.affiliation == school])
-          for school in AFFILIATIONS})
+         {school: statistics.mean(school_ppub_rate[school]) for school in AFFILIATIONS})
     plot(pp, 'Median faculty prestigious publication rate',
-         {school: statistics.median([rate for prof, rate in prof_ppub_rate.items() if prof.affiliation == school])
-          for school in AFFILIATIONS})
+         {school: statistics.median(school_ppub_rate[school]) for school in AFFILIATIONS})
     for j in TOP_JOURNALS:
         title = j.title().replace(' Of ', ' of ').replace(' And ', ' and ').replace(' The ', ' the ')\
             .replace('Rand J', 'RAND J')
         plot(pp, title, pubs_for_school_in_journal(top_papers, j))
+    pp.close()
+
+    pp = PdfPages("tall_" + pdf_output_filename)
+    boxplot(pp, 'Prestigious articles per professor', top_pubs_per_prof)
+    boxplot(pp, 'Prestigious publications per year', school_ppub_rate)
     pp.close()
 
 
