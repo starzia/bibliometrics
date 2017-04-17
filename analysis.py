@@ -512,7 +512,7 @@ def plot(pdf_pages, title, dict):
                rotation=30)
     plt.gca().yaxis.set_major_locator(matplotlib.ticker.MaxNLocator(integer=True))  # only use integer y ticks
     plt.gca().set_axisbelow(True)
-    plt.gca().yaxis.grid(True)
+    plt.gca().yaxis.grid(True, linewidth=0.25)
     plt.title(title)
     plt.gcf().tight_layout()
     plt.savefig(pdf_pages, format='pdf')
@@ -528,7 +528,8 @@ def boxplot(pdf_pages, title, dict, logscale=False):
     if not logscale:
         plt.figure(figsize=(4,7))
 
-    box = plt.boxplot([e[1] for e in data], notch=False, patch_artist=True, medianprops={'color': 'black'},
+    box = plt.boxplot([e[1] for e in data], notch=False, patch_artist=True,
+                      medianprops={'color': 'black', 'linewidth': 2.5},
                       boxprops={'linewidth': 0}, whis='range')
 
     for i, patch in enumerate(box['boxes']):
@@ -546,8 +547,46 @@ def boxplot(pdf_pages, title, dict, logscale=False):
     else:
         # start y axis at zero
         plt.ylim([0, plt.ylim()[1]])
-    plt.gca().yaxis.grid(True)
+    plt.gca().yaxis.grid(True, linestyle=':', linewidth=0.25)
     plt.title(title)
+    plt.gcf().tight_layout()
+    plt.savefig(pdf_pages, format='pdf')
+    plt.close()
+
+
+def broken_boxplot(pdf_pages, title, dict, breakpoint):
+    # sort schools by their median value
+    data = sorted(dict.items(), key=lambda entry: statistics.median(entry[1])
+                  + (1E-10 if entry[0] == 'Northwestern' else 0))  # show Kellogg first if tied
+    data.reverse()
+
+    fig, (ax_top, ax_bottom) = plt.subplots(2, 1, sharex=True, figsize=(4, 7))
+    # plot same data on both subplots
+    for ax in [ax_top, ax_bottom]:
+        box = ax.boxplot([e[1] for e in data], notch=False, patch_artist=True,
+                         medianprops={'color': 'black', 'linewidth': 2.5},
+                         boxprops={'linewidth': 0}, whis='range')
+        for i, patch in enumerate(box['boxes']):
+            if data[i][0] == 'Northwestern':
+                patch.set_facecolor([.29, 0, .51])
+            else:
+                patch.set_facecolor([0.8, 0.8, 0.8])
+        ax.yaxis.set_major_locator(matplotlib.ticker.MaxNLocator(integer=True))  # only use integer y ticks
+        ax.set_axisbelow(True)
+        ax.yaxis.grid(True, linestyle=':', linewidth=0.25)
+    plt.sca(ax_bottom)
+    plt.xticks(range(1, len(data)+1),
+               tuple(['Kellogg' if e[0] == 'Northwestern' else e[0] for e in data]),
+               rotation=30)
+    # define axis break
+    ax_top.set_ylim(breakpoint + 10E-3,  # add a little so that we don't repeat the ytick label
+                    ax_top.get_ylim()[1])
+    ax_bottom.set_ylim(0, breakpoint)
+    ## hide the spines between ax and ax2
+    #ax_top.spines['bottom'].set_visible(False)
+    #ax_bottom.spines['top'].set_visible(False)
+
+    ax_top.set_title(title)
     plt.gcf().tight_layout()
     plt.savefig(pdf_pages, format='pdf')
     plt.close()
@@ -565,7 +604,7 @@ def plot_citation_aging(aging):
     plt.xlabel("Years since professor's graduate degree")
     plt.ylabel("Number of faculty")
     plt.gca().set_axisbelow(True)
-    plt.gca().yaxis.grid(True)
+    plt.gca().yaxis.grid(True, linewidth=0.25)
     plt.gcf().tight_layout()
     plt.savefig("age_dist.pdf")
     plt.close()
@@ -583,7 +622,7 @@ def plot_citation_aging(aging):
     plt.ylim([0, 1500])
     plt.ylabel("Citations per professor")
     plt.gca().set_axisbelow(True)
-    plt.gca().yaxis.grid(True)
+    plt.gca().yaxis.grid(True, linewidth=0.25)
     plt.gcf().tight_layout()
     plt.savefig("citation_aging.pdf")
     plt.close()
@@ -609,7 +648,7 @@ def plot_early_dist(early_profs):
                    [age for age, cites in enumerate(prof_count)])
     plt.xlabel("Years since professor's graduate degree")
     plt.gca().set_axisbelow(True)
-    plt.gca().yaxis.grid(True)
+    plt.gca().yaxis.grid(True, linewidth=0.25)
     plt.gcf().tight_layout()
     plt.savefig("early_dist.pdf")
     plt.close()
@@ -629,7 +668,7 @@ def plot_prestigious_rate_aging(aging):
     plt.ylabel("Career-average prestigious publications per year")
     plt.ylim([0, 1.1])
     plt.gca().set_axisbelow(True)
-    plt.gca().yaxis.grid(True)
+    plt.gca().yaxis.grid(True, linewidth=0.25)
     plt.gcf().tight_layout()
     plt.savefig("prestigious_rate_aging.pdf")
     plt.close()
@@ -717,6 +756,7 @@ def run_analyses(profs, pdf_output_filename):
     plot(pp, 'Prestigious article count', j_stats)
     top_papers = papers_in_top_journals(profs)
     top_pubs_per_prof = top_journal_pubs_for_profs_at_school(top_papers)
+    boxplot(pp, 'Prestigious articles per professor', top_pubs_per_prof)
     plot(pp, 'Mean prestigious articles per professor',
          {school: statistics.mean(cites) for school, cites in top_pubs_per_prof.items()})
     plot(pp, 'Median prestigious articles per professor',
@@ -724,6 +764,7 @@ def run_analyses(profs, pdf_output_filename):
     prof_ppub_rate = normalize_to_age(top_papers);
     school_ppub_rate = {school: [rate for prof, rate in prof_ppub_rate.items() if prof.affiliation == school]
                         for school in AFFILIATIONS}
+    boxplot(pp, 'Prestigious publications per year', school_ppub_rate)
     plot(pp, 'Mean faculty prestigious publication rate',
          {school: statistics.mean(school_ppub_rate[school]) for school in AFFILIATIONS})
     plot(pp, 'Median faculty prestigious publication rate',
@@ -735,8 +776,8 @@ def run_analyses(profs, pdf_output_filename):
     pp.close()
 
     pp = PdfPages("tall_" + pdf_output_filename)
-    boxplot(pp, 'Prestigious articles per professor', top_pubs_per_prof)
-    boxplot(pp, 'Prestigious publications per year', school_ppub_rate)
+    broken_boxplot(pp, 'Prestigious articles per professor', top_pubs_per_prof, 10)
+    broken_boxplot(pp, 'Prestigious publications per year', school_ppub_rate, 1)
     pp.close()
 
 
