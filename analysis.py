@@ -522,7 +522,7 @@ def plot(pdf_pages, title, dict):
 def boxplot(pdf_pages, title, dict, logscale=False):
     # sort schools by their median value
     data = sorted(dict.items(), key=lambda entry: statistics.median(entry[1])
-                  + 1E-10 if entry[0] == 'Northwestern' else 0)  # show Kellogg first if tied
+                  + (1E-10 if entry[0] == 'Northwestern' else 0))  # show Kellogg first if tied
     data.reverse()
 
     if not logscale:
