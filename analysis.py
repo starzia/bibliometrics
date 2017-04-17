@@ -460,7 +460,7 @@ def h_index_from_citations(citation_counts):
 
 
 def sort_and_print_dict(dict):
-    lst = sorted(dict.items(), key=operator.itemgetter(1))
+    lst = sorted(dict.items(), key=lambda e: e[1] + (1E-10 if e[0] == 'Northwestern' else 0))  # Kellogg 1st on ties
     lst.reverse()
     for (key, v) in lst:
         # pad out schools names to 11 chars
@@ -521,7 +521,8 @@ def plot(pdf_pages, title, dict):
 
 def boxplot(pdf_pages, title, dict, logscale=False):
     # sort schools by their median value
-    data = sorted(dict.items(), key=lambda entry: statistics.median(entry[1]))
+    data = sorted(dict.items(), key=lambda entry: statistics.median(entry[1])
+                  + 1E-10 if entry[0] == 'Northwestern' else 0)  # show Kellogg first if tied
     data.reverse()
 
     if not logscale:
