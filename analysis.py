@@ -1,10 +1,14 @@
 import pprint
-import operator
 import unittest
 import statistics
 import string
 
 import editdistance
+
+# these two lines are necessary to use matplotlib in pycharm on a mac (http://stackoverflow.com/a/21789908)
+import matplotlib as mpl
+mpl.use('TkAgg')
+
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.ticker
@@ -334,13 +338,15 @@ def load_papers(prof) -> List[Tuple[str, str]]:
     if len(candidates) == 0:
         candidates = citations(load_scholar_papers(prof, ignore_search_results=False))
     # filter out non-articles
-    taboo = ["editor", "call for papers", "annual report"]
+    taboo = ["editor", "call for papers", "annual report", "working paper"]
     real_candidates = []
     for c in candidates:
+        is_taboo = False
         for t in taboo:
-            if t in c[1]:
-                continue
-        real_candidates.append(c)
+            if t in c[1].lower():
+                is_taboo = True
+        if not is_taboo:
+            real_candidates.append(c)
     return real_candidates
 
 
@@ -560,7 +566,7 @@ def broken_boxplot(pdf_pages, title, dict, breakpoint):
                   + (1E-10 if entry[0] == 'Northwestern' else 0))  # show Kellogg first if tied
     data.reverse()
 
-    fig, (ax_top, ax_bottom) = plt.subplots(2, 1, sharex=True, figsize=(4, 7))
+    fig, (ax_top, ax_bottom) = plt.subplots(2, 1, sharex=True, figsize=(4, 6))
     # plot same data on both subplots
     for ax in [ax_top, ax_bottom]:
         box = ax.boxplot([e[1] for e in data], notch=False, patch_artist=True,
@@ -571,7 +577,7 @@ def broken_boxplot(pdf_pages, title, dict, breakpoint):
                 patch.set_facecolor([.29, 0, .51])
             else:
                 patch.set_facecolor([0.8, 0.8, 0.8])
-        ax.yaxis.set_major_locator(matplotlib.ticker.MaxNLocator(integer=True))  # only use integer y ticks
+        #ax.yaxis.set_major_locator(matplotlib.ticker.MaxNLocator(integer=True))  # only use integer y ticks
         ax.set_axisbelow(True)
         ax.yaxis.grid(True, linestyle=':', linewidth=0.25)
     plt.sca(ax_bottom)
@@ -775,9 +781,9 @@ def run_analyses(profs, pdf_output_filename):
         plot(pp, title, pubs_for_school_in_journal(top_papers, j))
     pp.close()
 
-    pp = PdfPages("tall_" + pdf_output_filename)
-    broken_boxplot(pp, 'Prestigious articles per professor', top_pubs_per_prof, 10)
-    broken_boxplot(pp, 'Prestigious publications per year', school_ppub_rate, 1)
+    pp = PdfPages(pdf_output_filename.replace('.pdf', '_tall.pdf'))
+    broken_boxplot(pp, 'Prestigious articles per professor', top_pubs_per_prof, 8)
+    broken_boxplot(pp, 'Prestigious publications per year', school_ppub_rate, 0.8)
     pp.close()
 
 
