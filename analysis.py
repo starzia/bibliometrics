@@ -616,22 +616,24 @@ def plot_citation_aging(aging):
     plt.savefig("age_dist.pdf")
     plt.close()
 
-    plt.plot([age for age, cites in enumerate(aging)],
-             [statistics.median(cites) for age, cites in enumerate(aging)],
-             label="median citations")
-    plt.plot([age for age, cites in enumerate(aging)],
-             [statistics.mean(cites) for age, cites in enumerate(aging)], '--',
-             label="mean citations")
-    plt.xticks([age for age, cites in enumerate(aging)],
+    aging_boxplot(aging, "Citations per professor", "citation_aging.pdf")
+
+
+def aging_boxplot(aging, title, filename):
+    box = plt.boxplot([cites for age, cites in enumerate(aging)], notch=False, patch_artist=True,
+                      medianprops={'color': 'black', 'linewidth': 2.5},
+                      boxprops={'linewidth': 0}, whis='range')
+    for i, patch in enumerate(box['boxes']):
+        patch.set_facecolor([0.8, 0.8, 0.8])
+    plt.gca().set_axisbelow(True)
+    plt.gca().set_yscale('log')
+    plt.gca().yaxis.grid(True, linestyle=':', linewidth=0.25)
+    plt.xticks([age+1 for age, cites in enumerate(aging)],
                [age if age < 10 else '>=10' for age, cites in enumerate(aging)])
     plt.xlabel("Years since professor's graduate degree")
-    plt.legend(loc=2)
-    plt.ylim([0, 1500])
-    plt.ylabel("Citations per professor")
-    plt.gca().set_axisbelow(True)
-    plt.gca().yaxis.grid(True, linewidth=0.25)
+    plt.title(title)
     plt.gcf().tight_layout()
-    plt.savefig("citation_aging.pdf")
+    plt.savefig(filename)
     plt.close()
 
 
@@ -658,26 +660,6 @@ def plot_early_dist(early_profs):
     plt.gca().yaxis.grid(True, linewidth=0.25)
     plt.gcf().tight_layout()
     plt.savefig("early_dist.pdf")
-    plt.close()
-
-
-def plot_prestigious_rate_aging(aging):
-    plt.plot([age for age, cites in enumerate(aging)],
-             [statistics.median(cites) for age, cites in enumerate(aging)],
-             label="median rate")
-    plt.plot([age for age, cites in enumerate(aging)],
-             [statistics.mean(cites) for age, cites in enumerate(aging)], '--',
-             label="mean rate")
-    plt.xticks([age for age, cites in enumerate(aging)],
-               [age if age < 10 else '>=10' for age, cites in enumerate(aging)])
-    plt.xlabel("Years since professor's graduate degree")
-    plt.legend(loc=1)
-    plt.ylabel("Career-average prestigious publications per year")
-    plt.ylim([0, 1.1])
-    plt.gca().set_axisbelow(True)
-    plt.gca().yaxis.grid(True, linewidth=0.25)
-    plt.gcf().tight_layout()
-    plt.savefig("prestigious_rate_aging.pdf")
     plt.close()
 
 
@@ -731,7 +713,8 @@ def all_analyses():
 
     print('Looking exclusively at papers published in %s and later.' % starting_year)
     plot_citation_aging(citation_aging_report(profs))
-    plot_prestigious_rate_aging(prestigious_rate_aging_report(profs))
+    aging_boxplot(prestigious_rate_aging_report(profs), "Career-average prestigious publications per year",
+                  "prestigious_rate_aging.pdf")
 
     run_analyses(profs, "plots_all.pdf")
     # just consider profs who finished their PhD within the past ten years
