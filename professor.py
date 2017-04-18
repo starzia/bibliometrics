@@ -1,3 +1,4 @@
+import unittest
 from unidecode import unidecode
 
 from web_util import *
@@ -82,18 +83,23 @@ class Professor:
 
     def simple_name(self):
         """:return: "firstname lastname" and also removed any character diacritics (accents)."""
+        names = self.first_last_name()
+        return unidecode("%s %s" % (names[0], names[1]))
+
+    def first_last_name(self):
+        """:return: (firstname, lastname)"""
+        name = self.name
         if self.alt_name:
-            return self.alt_name
-        parts = self.name.split(' ')
+            name = self.alt_name
+        parts = name.split(' ')
         first_name = parts[0]
         last_name = parts[-1]
         # deal with cases like "R. Kipp Martin"
         if len(parts) > 2 and len(parts[1]) > 2 and not len(parts[0]) > 2:
             first_name = parts[1]
-        if len(parts) > 2 and len(last_name) <= 3 and last_name[:2] == 'Jr' or last_name[:2] == 'Sr':
+        if len(parts) > 2 and len(last_name) <= 3 and (last_name[:2] == 'Jr' or last_name[:2] == 'Sr'):
             last_name = parts[-2]
-        return unidecode("%s %s" % (first_name, last_name))
-
+        return first_name, last_name
 
     # TODO: extract PDFs from google docs? https://sites.google.com/site/kbaldigacoffman/resume
     def parse_personal_website(self):
@@ -123,7 +129,14 @@ class Professor:
                         print('%s: found Google Scholar page %s' % (self.slug(), self.google_scholar_url))
                         self.google_scholar_url = gs_url
 
+
+class Test(unittest.TestCase):
+    def test_first_last_name(self):
+        self.assertEqual(("Kipp", "Martin"), Professor(name="R. Kipp Martin", school="").first_last_name())
+
 if __name__ == '__main__':
+    unittest.main()
+
     # this is just a test case
     p = Professor(school='Columbia', name='F. Zhang', title="Professor", personal_url='http://www.fanyinzheng.com')
     p.parse_personal_website()

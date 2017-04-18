@@ -692,9 +692,10 @@ def print_professors(profs):
     for school in AFFILIATIONS:
         print()
         print('\\textbf{%s}:' % school)
-        for p in sorted(profs, key=lambda prof: prof.simple_name()):
+        for p in sorted(profs, key=lambda prof: prof.first_last_name()[1]):
             if p.affiliation == school:
-                print('%s,%s' % (p.name, '*' if p.graduation_year and int(p.graduation_year) >= 2007 else ''))
+                print('%s.~%s,%s' % (p.first_last_name()[0][0], p.first_last_name()[1],
+                                     '*' if p.graduation_year and int(p.graduation_year) >= 2007 else ''))
 
 
 def kellogg_dept_labelled_profs(profs) -> List[Professor]:
