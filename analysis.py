@@ -546,7 +546,8 @@ def boxplot(pdf_pages, title, dict, logscale=False):
     plt.xticks(range(1, len(data)+1),
                tuple(['Kellogg' if e[0] == 'Northwestern' else e[0] for e in data]),
                rotation=30)
-    plt.gca().yaxis.set_major_locator(matplotlib.ticker.MaxNLocator(integer=True))  # only use integer y ticks
+    if max(max([e[1] for e in data])) > 2:
+        plt.gca().yaxis.set_major_locator(matplotlib.ticker.MaxNLocator(integer=True))  # only use integer y ticks
     plt.gca().set_axisbelow(True)
     if logscale:
         plt.gca().set_yscale('log')
@@ -770,7 +771,7 @@ def run_analyses(profs, pdf_output_filename):
     prof_ppub_rate = normalize_to_age(top_papers);
     school_ppub_rate = {school: [rate for prof, rate in prof_ppub_rate.items() if prof.affiliation == school]
                         for school in AFFILIATIONS}
-    boxplot(pp, 'Prestigious publications per year', school_ppub_rate)
+    boxplot(pp, 'Prestigious articles per professor, per year', school_ppub_rate)
     plot(pp, 'Mean faculty prestigious publication rate',
          {school: statistics.mean(school_ppub_rate[school]) for school in AFFILIATIONS})
     plot(pp, 'Median faculty prestigious publication rate',
@@ -783,7 +784,7 @@ def run_analyses(profs, pdf_output_filename):
 
     pp = PdfPages(pdf_output_filename.replace('.pdf', '_tall.pdf'))
     broken_boxplot(pp, 'Prestigious articles per professor', top_pubs_per_prof, 8)
-    broken_boxplot(pp, 'Prestigious publications per year', school_ppub_rate, 0.8)
+    broken_boxplot(pp, 'Prestigious articles per professor, per year', school_ppub_rate, 0.8)
     pp.close()
 
 
