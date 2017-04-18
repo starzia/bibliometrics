@@ -20,7 +20,7 @@ from google_scholar import Paper, STARTING_YEAR, get_year
 from google_sheets import GoogleSheets
 from web_util import strip_whitespace
 
-AFFILIATIONS = ['Northwestern', 'Harvard', 'Chicago', 'MIT', 'Stanford', 'UPenn', 'Berkeley', 'Yale', 'Columbia']
+AFFILIATIONS = ['Northwestern', 'Harvard', 'Chicago', 'MIT', 'Stanford', 'UPenn', 'Berkeley', 'Yale', 'Columbia', 'Dartmouth']
 
 ABBREVIATIONS = {
     'the': None,
