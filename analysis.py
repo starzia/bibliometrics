@@ -363,7 +363,8 @@ def papers_in_top_journals(professors: List[Professor]) -> Dict[Professor, AnySt
         # detect anomalies
         if len(top_papers[p]) > 30:
             print("\nWARNING: found %d top papers for %s" % (len(top_papers[p]), p.slug()))
-            for paper in top_papers[p]:
+
+            for paper in sorted(top_papers[p], key=lambda citation: get_year(citation)):
                 print("\t" + strip_whitespace(paper))
     print("\nTotal of %d papers since %s\n" % (total_papers, starting_year))
     return top_papers
@@ -619,12 +620,12 @@ def plot_citation_aging(aging):
     aging_boxplot(aging, "Citations per professor", "citation_aging.pdf")
 
 
-def aging_boxplot(aging, title, filename):
+def aging_boxplot(aging, title, filename, boxcolor=[0.8, 0.8, 0.8]):
     box = plt.boxplot([cites for age, cites in enumerate(aging)], notch=False, patch_artist=True,
                       medianprops={'color': 'black', 'linewidth': 2.5},
                       boxprops={'linewidth': 0}, whis='range')
     for i, patch in enumerate(box['boxes']):
-        patch.set_facecolor([0.8, 0.8, 0.8])
+        patch.set_facecolor(boxcolor)
     plt.gca().set_axisbelow(True)
     plt.gca().set_yscale('log')
     plt.gca().yaxis.grid(True, linestyle=':', linewidth=0.25)
@@ -715,6 +716,9 @@ def all_analyses():
     plot_citation_aging(citation_aging_report(profs))
     aging_boxplot(prestigious_rate_aging_report(profs), "Career-average prestigious publications per year",
                   "prestigious_rate_aging.pdf")
+    aging_boxplot(prestigious_rate_aging_report([p for p in profs if p.school == "Northwestern"]),
+                  "Kellogg prestigious publications per year",
+                  "prestigious_rate_aging_kellogg.pdf", boxcolor=[.29,0,.51])
 
     run_analyses(profs, "plots_all.pdf")
     # just consider profs who finished their PhD within the past ten years
