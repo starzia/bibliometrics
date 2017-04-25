@@ -526,7 +526,7 @@ def plot(pdf_pages, title, dict):
     plt.close()
 
 
-def boxplot(pdf_pages, title, dict, logscale=False):
+def boxplot(pdf_pages, title, dict, logscale=False, start_y_at_zero=True):
     # sort schools by their median value
     data = sorted(dict.items(), key=lambda entry: statistics.median(entry[1])
                   + (1E-10 if entry[0] == 'Northwestern' else 0))  # show Kellogg first if tied
@@ -552,7 +552,7 @@ def boxplot(pdf_pages, title, dict, logscale=False):
     plt.gca().set_axisbelow(True)
     if logscale:
         plt.gca().set_yscale('log')
-    else:
+    elif start_y_at_zero:
         # start y axis at zero
         plt.ylim([0, plt.ylim()[1]])
     plt.gca().yaxis.grid(True, linestyle=':', linewidth=0.25)
@@ -734,8 +734,14 @@ def all_analyses():
 
 
 def run_analyses(profs, pdf_output_filename):
-    pp = PdfPages(pdf_output_filename)
+    # plot distribution of ages
+    pp = PdfPages(pdf_output_filename.replace('.pdf', '_ages.pdf'))
+    boxplot(pp, 'Distribution of graduation years',
+            {school: [int(p.graduation_year) for p in profs if p.affiliation == school and p.graduation_year]
+             for school in AFFILIATIONS}, start_y_at_zero=False)
+    pp.close()
 
+    pp = PdfPages(pdf_output_filename)
     plot(pp, 'Faculty count', {school:len([p for p in profs if p.affiliation==school]) for school in AFFILIATIONS})
 
     citations = citations_for_profs_in_school(profs)
