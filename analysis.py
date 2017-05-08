@@ -788,10 +788,15 @@ def run_analyses(profs, pdf_output_filename):
          {school: statistics.mean(school_ppub_rate[school]) for school in AFFILIATIONS})
     plot(pp, 'Median faculty prestigious publication rate',
          {school: statistics.median(school_ppub_rate[school]) for school in AFFILIATIONS})
+
+    kellogg_paper_report = ""
     for j in TOP_JOURNALS:
         title = j.title().replace(' Of ', ' of ').replace(' And ', ' and ').replace(' The ', ' the ')\
             .replace('Rand J', 'RAND J')
-        plot(pp, title, pubs_for_school_in_journal(top_papers, j))
+        pubs = pubs_for_school_in_journal(top_papers, j)
+        plot(pp, title, pubs)
+        kellogg_paper_report += ('"%s",%d\n' % (title, pubs['Northwestern']))
+    print("Kellogg papers:\n%s\n" % kellogg_paper_report)
     pp.close()
 
     pp = PdfPages(pdf_output_filename.replace('.pdf', '_tall.pdf'))
