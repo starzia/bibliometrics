@@ -638,6 +638,22 @@ def aging_boxplot(aging, title, filename, boxcolor=[0.8, 0.8, 0.8]):
     plt.close()
 
 
+def boxplot_legend():
+    plt.figure(figsize=(2, 2))
+    box = plt.boxplot([1, 2, 3, 4, 5], notch=False, patch_artist=True,
+                medianprops={'color': 'black', 'linewidth': 2.5},
+                boxprops={'linewidth': 0}, whis='range')
+    for i, patch in enumerate(box['boxes']):
+        patch.set_facecolor([0.8, 0.8, 0.8])
+    for i, label in enumerate(["minimum", "25th percentile", "median", "75th percentile", "maximum"]):
+        plt.text(1.1, i+0.9, label)
+    plt.axis('off')
+    plt.xlim([0.9, 1.5])
+    plt.gcf().tight_layout()
+    plt.savefig("boxplot_legend.pdf")
+    plt.close()
+
+
 def plot_early_dist(early_profs):
     plt.figure(figsize=(4, 8))
     for i, school in enumerate(AFFILIATIONS):
@@ -731,6 +747,8 @@ def all_analyses():
     global AFFILIATIONS
     AFFILIATIONS = KELLOGG_DEPTS.keys()  # this is a hack to plot dept results like school results
     run_analyses(kellogg_dept_labelled_profs(profs), "plots_kellogg_dept.pdf")
+
+    boxplot_legend()
 
 
 def run_analyses(profs, pdf_output_filename):
