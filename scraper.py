@@ -7,7 +7,6 @@ import csv
 import os
 import pprint
 import subprocess
-import time
 from google_scholar import GoogleScholar, get_year
 from professor import *
 from professor_scraper import save_paper_list
