@@ -789,14 +789,18 @@ def run_analyses(profs, pdf_output_filename):
     plot(pp, 'Median faculty prestigious publication rate',
          {school: statistics.median(school_ppub_rate[school]) for school in AFFILIATIONS})
 
+    school_analysis = "kellogg" not in pdf_output_filename  # hacky check
     kellogg_paper_report = ""
     for j in TOP_JOURNALS:
         title = j.title().replace(' Of ', ' of ').replace(' And ', ' and ').replace(' The ', ' the ')\
             .replace('Rand J', 'RAND J')
         pubs = pubs_for_school_in_journal(top_papers, j)
         plot(pp, title, pubs)
-        kellogg_paper_report += ('"%s",%d\n' % (title, pubs['Northwestern']))
-    print("Kellogg papers:\n%s\n" % kellogg_paper_report)
+        # compile a table counting papers from Kellogg in top journals, but only if not doing the departmental analysis
+        if school_analysis:
+            kellogg_paper_report += ('"%s",%d\n' % (title, pubs['Northwestern']))
+    if school_analysis:
+        print("Kellogg papers:\n%s\n" % kellogg_paper_report)
     pp.close()
 
     pp = PdfPages(pdf_output_filename.replace('.pdf', '_tall.pdf'))
