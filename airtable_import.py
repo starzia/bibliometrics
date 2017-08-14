@@ -1,7 +1,7 @@
 """
 Copy Kellogg Prof data into an Airtable DB for our Research Support CRM
 """
-from google_sheets import GoogleSheets
+from csv_professor_sheet import SpreadSheet
 from web_util import get_json, get_tree, css_select
 import getpass
 import requests
@@ -9,8 +9,7 @@ import json
 
 def airtable_import():
     # load kellogg prof data
-    gs = GoogleSheets()
-    profs = gs.read_profs()
+    profs = SpreadSheet().read_profs()
     profs = [p for p in profs if p.school=="Northwestern"]
     # prompt for airtable api key
     airtable_API_key = getpass.getpass("Enter your AirTable API key: ")

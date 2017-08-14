@@ -3,7 +3,7 @@
 the main script
 """
 
-import csv
+import csv_professor_sheet
 import os
 import pprint
 import subprocess
@@ -23,7 +23,7 @@ from school.dartmouth import scrape_dartmouth
 from school.yale import scrape_yale
 from school.columbia import scrape_columbia
 
-from google_sheets import GoogleSheets
+from csv_professor_sheet import SpreadSheet
 
 pp = pprint.PrettyPrinter(indent=4)
 CV_PATH = 'output/CVs'
@@ -57,7 +57,7 @@ def convert_CVs_to_text():
 
 
 def load_CVs():
-    """ :return: a dictionary mapping name slugs to cv strings"""
+    """ :return: a dictionary mapping name sluspreadsheet to cv strinspreadsheet"""
     all_CVs = {}
     for file_path in os.listdir(CV_PATH):
         if file_path.endswith(".txt"):
@@ -76,8 +76,8 @@ def show_editorial_service(all_CVs):
                 print(line)
 
 
-def get_missing_google_scholar_pages(google_sheets, school=None):
-    profs = google_sheets.read_profs()
+def get_missing_google_scholar_pages(spreadsheet, school=None):
+    profs = spreadsheet.read_profs()
     random.shuffle(profs)
     with GoogleScholar() as scholar:
         for p in profs:
@@ -86,11 +86,11 @@ def get_missing_google_scholar_pages(google_sheets, school=None):
             if p.google_scholar_url is None:
                 print(p.name)
                 p.google_scholar_url = scholar.find_google_scholar_page(p)
-                google_sheets.save_prof(p)
+                spreadsheet.save_prof(p)
 
 
-def download_scholar_profiles(google_sheets, school=None):
-    professors = google_sheets.read_profs()
+def download_scholar_profiles(spreadsheet, school=None):
+    professors = spreadsheet.read_profs()
     with GoogleScholar() as scholar:
         for p in professors:
             if school and p.school != school:
@@ -100,8 +100,8 @@ def download_scholar_profiles(google_sheets, school=None):
                 save_paper_list('scholar_profile', p, scholar.scrape_profile(p.google_scholar_url))
 
 
-def download_scholar_search_results(google_sheets, school=None):
-    professors = google_sheets.read_profs()
+def download_scholar_search_results(spreadsheet, school=None):
+    professors = spreadsheet.read_profs()
     with GoogleScholar() as scholar:
         for p in professors:
             if school and p.school != school:
@@ -111,7 +111,7 @@ def download_scholar_search_results(google_sheets, school=None):
                 save_paper_list('scholar_search', p, scholar.scrape_search_results(p))
 
 
-def ask_for_graduation_years(google_sheets, profs):
+def ask_for_graduation_years(spreadsheet, profs):
     for p in profs:
         if p.graduation_year is None:
             # show the CV
@@ -124,13 +124,13 @@ def ask_for_graduation_years(google_sheets, profs):
             if year_str is not None and len(year_str) > 0:
                 p.graduation_year = int(year_str)
                 p.graduation_school = school
-                google_sheets.save_prof(p)
+                spreadsheet.save_prof(p)
 
 
 def load_mturk_results(csv_filename):
     observed_answers = {}
     with open(csv_filename, 'r') as csvfile:
-        for row in csv.reader(csvfile, delimiter=',', quotechar='"'):
+        for row in csv_professor_sheet.reader(csvfile, delimiter=',', quotechar='"'):
             name_slug = row[3].split('/')[-1].split('.')[0]
             phd_year = get_year(row[6])
             if not phd_year:
@@ -149,14 +149,14 @@ def load_mturk_results(csv_filename):
                 year_to_record[slug] = a
                 continue
     # save results
-    gs = GoogleSheets()
-    profs = gs.read_profs()
+    ss = SpreadSheet()
+    profs = ss.read_profs()
     for p in profs:
         if p.slug() in year_to_record and year_to_record[p.slug()] != p.graduation_year:
             p.graduation_year = year_to_record[p.slug()]
             time.sleep(1)
             print("%s: saving graduation year %s" % (p.slug(), p.graduation_year))
-            gs.save_prof(p)
+            spreadsheet.save_prof(p)
 
 
 def scrape_all_schools():
@@ -174,32 +174,32 @@ def scrape_all_schools():
     return profs
 
 
-def rescrape(gs, school_scraper):
-    profs = gs.read_profs()
+def rescrape(spreadsheet, school_scraper):
+    profs = spreadsheet.read_profs()
     new_profs = school_scraper()
     for p in new_profs:
         for p2 in profs:
             if p2.slug() == p.slug():
                 print("merging new data for " + p.slug())
                 p.merge(p2)
-    gs.update_profs(new_profs)
+    spreadsheet.update_profs(new_profs)
 
 
 if __name__ == '__main__':
-    gs = GoogleSheets()
+    spreadsheet = SpreadSheet()
     do_reload = False
     if do_reload:
         profs = scrape_all_schools()
-        get_missing_google_scholar_pages(gs)
+        get_missing_google_scholar_pages(spreadsheet)
         for p in profs:
             # look for CV and Scholar links on any personal website
             p.parse_personal_website()
             download_cv(p)
         convert_CVs_to_text()
-        gs.append_profs(profs)
-        get_missing_google_scholar_pages(gs)
-        download_scholar_profiles(gs)
-        download_scholar_search_results(gs)
-    profs = gs.read_profs()
+        spreadsheet.append_profs(profs)
+        get_missing_google_scholar_pages(spreadsheet)
+        download_scholar_profiles(spreadsheet)
+        download_scholar_search_results(spreadsheet)
+    profs = spreadsheet.read_profs()
     all_CVs = load_CVs()
     print("Total of %d professors found" % len(profs))

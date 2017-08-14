@@ -17,7 +17,7 @@ from professor import Professor
 from typing import List, Dict, AnyStr, Tuple
 from professor_scraper import load_paper_list
 from google_scholar import Paper, STARTING_YEAR, get_year
-from google_sheets import GoogleSheets
+from csv_professor_sheet import SpreadSheet
 from web_util import strip_whitespace
 
 AFFILIATIONS = ['Northwestern', 'Harvard', 'Chicago', 'MIT', 'Stanford', 'UPenn', 'Berkeley', 'Yale', 'Columbia', 'Dartmouth']
@@ -713,8 +713,7 @@ def kellogg_dept_labelled_profs(profs) -> List[Professor]:
 
 
 def all_analyses():
-    gs = GoogleSheets()
-    profs = gs.read_profs()
+    profs = SpreadSheet().read_profs()
     for p in profs:
         p.affiliation = p.school  # later we will do an analysis by department
     # remove hidden profs

@@ -7,7 +7,6 @@ from oauth2client import tools
 from oauth2client.file import Storage
 
 from professor import Professor
-from google_sheets_util import get_from_row
 
 # based on https://developers.google.com/sheets/api/quickstart/python
 
