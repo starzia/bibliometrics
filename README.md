@@ -36,3 +36,6 @@ For a simple demo you can run
     python school/kellogg.py
 
 A full scrape can be started with `./scraper.py`
+
+To run an analysis that produces all the plots used in the Latex report then run `./analysis.py`.
+This relies on your having previously run a full scrape.
