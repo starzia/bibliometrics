@@ -1,3 +1,7 @@
+# To access our shared Google Sheet storing faculty information, you must ask for
+# read/write permission on the sheet, and also download 'google_api_client_secret.json'
+# into your working directory
+
 import httplib2
 import os
 

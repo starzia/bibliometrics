@@ -7,6 +7,7 @@ look at these files:
 * `google_scholar.py`: which uses Selenium to scrape Google Scholar data.
     The `wait_for_captchas` function is especially helpful in detecting three different types of Google captchas.
 
+
 Prerequisites
 -------------
 This is written for Python 3.  It will not work with the Python 2.7 that comes with Macs.
@@ -23,8 +24,6 @@ To use the Google Scholar scraper, you must first install selenium Gecko and Chr
 https://github.com/mozilla/geckodriver/releases
 https://sites.google.com/a/chromium.org/chromedriver/downloads
 
-To access our shared Google Sheet storing faculty information, you must ask for read/write permission on the sheet,
-and also download 'google_api_client_secret.json' into your working directory
 
 Running
 -------
@@ -35,7 +34,14 @@ For a simple demo you can run
 
     python school/kellogg.py
 
-A full scrape can be started with `./scraper.py`
+A full scrape can be started with `./scraper.py`.  BUT... you'll actually have to look at the
+code in `scraper.py` and set the variable `do_reload = True`.
 
 To run an analysis that produces all the plots used in the Latex report then run `./analysis.py`.
 This relies on your having previously run a full scrape.
+
+
+Output
+------
+
+`./scraper.py`
