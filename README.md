@@ -24,6 +24,9 @@ To use the Google Scholar scraper, you must first install selenium Gecko and Chr
 https://github.com/mozilla/geckodriver/releases
 https://sites.google.com/a/chromium.org/chromedriver/downloads
 
+On RHEL/Centos, you will have to first run
+   sudo yum install libcurl-devel
+   PYCURL_SSL_LIBRARY=nss pip3 install pycurl
 
 Running
 -------
