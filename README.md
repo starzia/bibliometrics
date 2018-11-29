@@ -28,6 +28,9 @@ On RHEL/Centos, you will have to first run
    sudo yum install libcurl-devel
    PYCURL_SSL_LIBRARY=nss pip3 install pycurl
 
+On Mac, you may first have to run
+   PYCURL_SSL_LIBRARY=openssl LDFLAGS="-L/usr/local/opt/openssl/lib" CPPFLAGS="-I/usr/local/opt/openssl/include" pip install --no-cache-dir pycurl
+
 Running
 -------
 There isn't a single command that'll do everything.  The project is a collection of functions 
