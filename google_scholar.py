@@ -160,13 +160,15 @@ class GoogleScholar:
         # click "show more" button until it disappears
         while True:
             try:
-                for button in self.selenium_driver.find_elements_by_css_selector('button'):
-                    if button.text == 'Show more':
-                        button.click()
-                        self.wait_for_captchas()
-                        wait()
+                button = self.selenium_driver.find_element_by_css_selector('button#gsc_bpf_more:enabled')
+                if button:
+                    button.click()
+                    self.wait_for_captchas()
+                    wait()
+                else:
+                    # if no enabled button found, then we're done
+                    break
             except (NoSuchElementException, ElementNotVisibleException, InvalidElementStateException):
-                # we expect to see an InvalidElementStateException if the button is disabled after clicking it
                 break
         # load the page in Beautiful Soup for easier parsing
         tree = tree_from_string(self.selenium_driver.page_source)
@@ -211,8 +213,8 @@ class GoogleScholar:
                         scholar_citations = link.text.split(' ')[-1]
                     elif 'Web of Science:' in link.text:
                         wos_citations = link.text.split(': ')[-1]
-                    elif link.get('onclick') and 'return gs_ocit' in link.get('onclick'):
-                        citation_id = link.get('onclick').split("'")[1]
+                    elif 'Related articles' in link.text:
+                        citation_id = link.get('href').split(":")[1]
                 # ignore papers with no citations
                 if not scholar_citations:
                     break
@@ -261,5 +263,5 @@ class GoogleScholar:
 if __name__ == '__main__':
     # for some reason, running this in the IDE requires me to set the geckodriver path
     with GoogleScholar('/usr/local/bin/geckodriver') as scholar:
-        # res = scholar.scrape_scholar_profile('https://scholar.google.com/citations?user=VGoSakQAAAAJ&hl=en&oi=ao')
+        print(scholar.scrape_profile('https://scholar.google.com/citations?user=a1ngrCIAAAAJ&hl=en'))
         print(scholar.scrape_search_results(Professor(school='Northwestern', name='Nabil Al-Najjar')))
